@@ -1,0 +1,23 @@
+﻿body {
+    font-family: Poppins
+}
+
+::-webkit-input-placeholder { /* Edge */
+    color: #bdc3c7 !important;
+}
+
+:-ms-input-placeholder { /* Internet Explorer */
+    color: #bdc3c7 !important;
+}
+
+::placeholder {
+    color: #bdc3c7 !important;
+}
+
+.input-login {
+    background-color: #0000001f !important;
+    border-radius: 46px;
+    height: 2.9rem;
+    font-size: 14px;
+    opacity: 0.7;
+}

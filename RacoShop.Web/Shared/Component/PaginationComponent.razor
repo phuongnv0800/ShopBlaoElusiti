@@ -1,0 +1,76 @@
+﻿<div class="d-flex justify-content-between align-items-center flex-wrap w-100">
+
+    <ul class="pagination d-flex align-items-center">
+        @foreach (var link in _links)
+        {
+            <li class="page-item @(link.Enabled ? null : "disabled") @(link.Active ? "active" : null)"
+                @onclick="() => OnSelectedPage(link)" ><a class="page-link">@link.Text</a>
+            </li>
+        }
+    </ul>
+    <div class="d-flex align-items-center">
+        <select class="form-select me-4 border-0 bg-light shadow-none" style="width: 75px;"
+                @onchange="HandleChange">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+        </select>
+        <span class="text-muted">Displaying @MetaData.PageSize of @MetaData.TotalCount records</span>
+    </div>
+</div>
+
+
+@code {
+    [Parameter]
+    public MetaData MetaData { get; set; }
+
+    [Parameter]
+    public int Spread { get; set; }
+
+    [Parameter]
+    public EventCallback<int> SelectedPage { get; set; }
+
+    [Parameter]
+    public EventCallback<int> ShowPageSize { get; set; }
+
+    private List<PagingLink> _links;
+
+    protected override void OnParametersSet()
+    {
+        CreatePaginationLinks();
+    }
+    private async void HandleChange(ChangeEventArgs e)
+    {
+        int size = Int32.Parse(e.Value.ToString());
+        //MetaData.PageSize = size;
+        await ShowPageSize.InvokeAsync(size);
+    }
+    private void CreatePaginationLinks()
+    {
+        _links = new List<PagingLink>();
+        _links.Add(new PagingLink(MetaData.CurrentPage - 1, MetaData.HasPrevius, "Previus"));
+        for (int i = 1; i <= MetaData.TotalPages; i++)
+        {
+            if (i >= MetaData.CurrentPage - Spread && i <= MetaData.CurrentPage + Spread)
+            {
+                _links.Add(new PagingLink(i, true, i.ToString())
+                {
+                    Active = MetaData.CurrentPage == i
+                });
+            }
+        }
+        _links.Add(new PagingLink(MetaData.CurrentPage + 1, MetaData.HasNext, "Next"));
+    }
+    private async Task OnSelectedPage(PagingLink link)
+    {
+        if (link.Page == MetaData.CurrentPage || !link.Enabled)
+        {
+            return;
+        }
+        MetaData.CurrentPage = link.Page;
+        await SelectedPage.InvokeAsync(link.Page);
+    }
+
+}

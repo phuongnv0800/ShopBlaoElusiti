@@ -1,0 +1,70 @@
+﻿@if (Cart != null)
+{
+    <td>
+        <div class="d-flex align-items-center font-weight-bolder">
+            <a class="p-1 me-2" href="product/@Cart.ProductId" style="height: 50px; width:50px">
+                <img src="@Cart.ImagePath" alt="#">
+            </a>
+            <a href="/product/@Cart.ProductId" class="text-dark">@Cart.Name</a>
+        </div>
+    </td>
+    <td>
+        <div class="d-flex justify-content-center align-items-center">
+            <a type="button" @onclick="DecreaseQuantity" class="rounded-circle p-0">
+                <i class="lni lni-circle-minus"></i>
+            </a>
+            <p class="quantity mx-1">@Cart.Quantity</p>
+            <a type="button" @onclick="IncreaseQuantity" class="rounded-circle p-0">
+                <i class="lni lni-circle-plus"></i>
+            </a>
+        </div>
+    </td>
+    <td class="text-start fw-bolder">@Cart.Price.ToString("c")</td>
+}
+else
+{
+    <LoadingIndicator />
+}
+@inject ICartApiClient CartApiClient
+@code {
+
+    [Parameter]
+    public CartVm Cart { get; set; }
+    [Parameter]
+    public EventCallback Callback { get; set; }
+    private CartRequest request;
+
+    protected override void OnInitialized()
+    {
+        request = new CartRequest();
+    }
+
+    private async void IncreaseQuantity()
+    {
+        request.ProductId = Cart.ProductId;
+        request.UserId = Cart.UserId;
+        request.Quantity = Cart.Quantity + 1;
+        var result = await CartApiClient.AddToCart(request);
+        if (result) await Callback.InvokeAsync();
+    }
+
+    private async void DecreaseQuantity()
+    {
+
+        bool result;
+        if (Cart.Quantity <= 1)
+        {
+            result = await CartApiClient.DeleteProduct(Cart.UserId, Cart.ProductId);
+        }
+        else
+        {
+            request.Quantity = Cart.Quantity - 1;
+            request.ProductId = Cart.ProductId;
+            request.UserId = Cart.UserId;
+            result = await CartApiClient.AddToCart(request);
+        }
+        if (result) await Callback.InvokeAsync();
+    }
+
+
+}

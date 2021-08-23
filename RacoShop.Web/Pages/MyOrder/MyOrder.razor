@@ -1,0 +1,170 @@
+﻿@page "/my-orders"
+<div class="breadcrumbs">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 col-md-6 col-12">
+                <div class="breadcrumbs-content">
+                    <h1 class="page-title">Order</h1>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 col-12">
+                <ul class="breadcrumb-nav">
+                    <li><a href="/"><i class="lni lni-home"></i>Trang chủ</a></li>
+                    <li><a href="shop">Shop</a></li>
+                    <li>Danh sách đặt hàng</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<section class="section">
+    <div class="container">
+        <div class="row">
+            <div class="col-3"></div>
+            <div class="col-9">
+                <div class="card">
+                    <!--begin::Header-->
+                    <div class="card-header">
+                        <h5 class="card-title align-items-start flex-column">
+                            <span class="card-label font-weight-bolder font-size-h3 text-dark">My Orders</span>
+                        </h5>
+                    </div>
+                    <!--end::Header-->
+                    <!--begin::Body-->
+                    <div class="card-body">
+                        <!--begin: Search Form-->
+                        <!--begin::Search Form-->
+                        <div class="mb-10">
+                            <div class="row align-items-center">
+                                <div class="col-lg-9 col-xl-8">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-4 my-2 my-md-0">
+                                            <div class="input-icon">
+                                                <input type="text" class="form-control form-control-solid" placeholder="Search..." id="kt_datatable_search_query" />
+                                                <span>
+                                                    <i class="flaticon2-search-1 text-muted"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 my-2 my-md-0">
+                                            <select class="form-control form-control-solid" id="kt_datatable_search_status">
+                                                <option value="">Status</option>
+                                                <option value="1">Pending</option>
+                                                <option value="2">Delivered</option>
+                                                <option value="3">Canceled</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4 my-2 my-md-0">
+                                            <select class="form-control form-control-solid" id="kt_datatable_search_type">
+                                                <option value="">Type</option>
+                                                <option value="4">Success</option>
+                                                <option value="5">Info</option>
+                                                <option value="6">Danger</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-xl-4 mt-5 mt-lg-0">
+                                    <a href="#" class="btn btn-light-primary px-6 font-weight-bold">Search</a>
+                                </div>
+                            </div>
+                        </div>
+                        <!--end::Search Form-->
+                        <!--end: Search Form-->
+                        <!--begin: Datatable-->
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Order Id</th>
+                                    <th>Ngày tạo </th>
+                                    <th>Người nhận</th>
+                                    <th>Địa chỉ nhận</th>
+                                    <th>Số điện thoại</th>
+                                    <th>Trạng thái</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (orders != null && orders.Count != 0)
+                                {
+                                    foreach (var item in orders)
+                                    {
+                                        <tr>
+                                            <td><a href="/my-orders/@item.Id">@item.Id</a></td>
+                                            <td>@item.DateCreated</td>
+                                            <td>@item.ShipName</td>
+                                            <td>@item.ShipAddress</td>
+                                            <td>@item.ShipPhone</td>
+                                            <td><OrderLabel OrderStatus="item.Status"></OrderLabel></td>
+                                            <td></td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="7">Chưa có đơn hàng nào</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        <PaginationComponent MetaData="MetaData" Spread="2" SelectedPage="SelectedPage"></PaginationComponent>
+                        <!--end: Datatable-->
+                    </div>
+                    <!--end::Body-->
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IOrderApiClient OrderApiClient
+@inject IUserApiClient UserApiClient
+@inject NavigationManager NavigationManager
+@inject IToastService ToastService
+@attribute [Authorize]
+@code {
+    private List<OrderVm> orders;
+    private UserVm user;
+    private PagingRequest request;
+
+    public MetaData MetaData { get; set; }
+    private AuthenticationState authState;
+    private string userName;
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = new UserVm();
+        MetaData = new MetaData();
+        request = new PagingRequest();
+        authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        userName = authState.User.Identity.Name.ToString();
+        user = await UserApiClient.GetByUserName(userName);
+        await GetOrders();
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+            await GetOrders();
+    }
+    private async Task SelectedPage(int page)
+    {
+        request.PageNumber = page;
+        await GetOrders();
+    }
+
+    public async void Search(string name)
+    {
+        this.request.Keyword = name;
+        await GetOrders();
+    }
+
+    private async Task GetOrders()
+    {
+        var result = await OrderApiClient.GetByUser(user.Id, request);
+        orders = result.Items;
+        MetaData = result.MetaData;
+        StateHasChanged();
+    }
+}

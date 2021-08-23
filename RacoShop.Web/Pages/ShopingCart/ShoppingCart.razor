@@ -1,0 +1,158 @@
+﻿@page "/cart"
+<div class="breadcrumbs">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 col-md-6 col-12">
+                <div class="breadcrumbs-content">
+                    <h1 class="page-title">Giỏ hàng</h1>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 col-12">
+                <ul class="breadcrumb-nav">
+                    <li><a href="/"><i class="lni lni-home"></i>Trang chủ</a></li>
+                    <li><a href="shop">Shop</a></li>
+                    <li>Giỏ hàng</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="item-details section">
+    <div class="container">
+        <!--begin::Section-->
+        <div class="card">
+            <!--begin::Header-->
+            <div class="card-header">
+                <div class="d-flex justify-content-between py-2">
+                    <h3 class="card-title">
+                        <span class="fw-bold">Giỏ hàng của bạn</span>
+                    </h3>
+                    <div class="">
+                        <a href="shop" class="btn btn-outline-primary">Tiếp tục mua sắm</a>
+                    </div>
+                </div>
+            </div>
+            <!--end::Header-->
+            <div class="card-body">
+                <!--begin::Shopping Cart-->
+                <div class="table-responsive">
+                    <table class="table">
+                        <!--begin::Cart Header-->
+                        <thead>
+                            <tr>
+                                <th class="text-start">Sản phẩm</th>
+                                <th class="text-center">Số lượng</th>
+                                <th class="text-start">Giá</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <!--end::Cart Header-->
+                        <tbody>
+                            @if (Carts != null)
+                            {
+                                decimal totalPrice = 0;
+                                foreach (var item in Carts)
+                                {
+                                    <tr>
+                                        <UpdateQuantityCart Cart="item" Callback="UpdateSuccess" />
+                                        <td class="text-right align-middle">
+                                            <button @onclick="() => Delete(item.UserId, item.ProductId)"
+                                                    class="btn btn-outline-danger fw-bolder">
+                                                Xoá
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    totalPrice += item.SubTotal;
+                                }
+                                <tr>
+                                    <td colspan="2"></td>
+                                    <td class="fw-bolder text-start">Tổng tiền</td>
+                                    <td class="fw-bolder text-start">@totalPrice.ToString("c")</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4" class="border-0 text-muted text-start pt-3">Chưa tính chi phí vận chuyển. Đã bao gồm VAT</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <LoadingIndicator></LoadingIndicator>
+                            }
+                            <tr>
+                                <td colspan="2" class="border-0 pt-10">
+                                    <form>
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <label class="fw-bolder">Sử dụng Voucher</label>
+                                            </div>
+                                            <div class="col-md-7">
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control" placeholder="Voucher Code" />
+                                                    <button class="btn btn-outline-secondary" type="button">Đồng ý</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </td>
+                                <td colspan="2" class="border-0 text-start pt-2">
+                                    <a href="checkout" class="btn btn-success fw-bolder px-3">Đặt hàng</a>
+                                </td>
+                            </tr>
+                            <!--end::Cart Footer-->
+                        </tbody>
+                    </table>
+                </div>
+                <!--end::Shopping Cart-->
+            </div>
+        </div>
+        <!--end::Section-->
+    </div>
+</section>
+
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ICartApiClient CartApiClient
+@attribute [Authorize]
+@code{
+
+    public IEnumerable<CartVm> Carts { get; set; }
+    private AuthenticationState authState;
+    private string userName;
+    [CascadingParameter]
+    public IModalService Modal { get; set; }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            userName = authState.User.Identity.Name.ToString();
+        }
+        await GetCarts();
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        userName = authState.User.Identity.Name.ToString();
+        await GetCarts();
+    }
+    public async Task UpdateSuccess()
+    {
+        await GetCarts();
+    }
+    private async Task GetCarts()
+    {
+        Carts = await CartApiClient.GetByUserName(userName);
+        StateHasChanged();
+    }
+
+    private async void Delete(Guid userId, int productId)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(DeleteCart.UserId), userId);
+        parameters.Add(nameof(DeleteCart.ProductId), productId);
+        var moviesModal = Modal.Show<DeleteCart>("DeleteProductInCart", parameters);
+        var result = await moviesModal.Result;
+        if (!result.Cancelled)
+            await GetCarts();
+    }
+}

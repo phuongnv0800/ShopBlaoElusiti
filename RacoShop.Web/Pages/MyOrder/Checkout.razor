@@ -1,0 +1,348 @@
+﻿@page "/checkout"
+<div class="breadcrumbs">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 col-md-6 col-12">
+                <div class="breadcrumbs-content">
+                    <h1 class="page-title">Thanh toán</h1>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 col-12">
+                <ul class="breadcrumb-nav">
+                    <li><a href="/"><i class="lni lni-home"></i>Trang chủ</a></li>
+                    <li><a href="shop">Shop</a></li>
+                    <li><a href="cart">Giỏ hàng</a></li>
+                    <li>Thanh toán</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="section">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 col-lg-3">
+
+            </div>
+            <div class="col-12 col-lg-9">
+                <div class="card">
+                    <div class="card-body">
+                        <!--begin: Wizard-->
+                        <div class="wizard wizard-4" data-wizard-state="step-first" data-wizard-clickable="false">
+                            <!--begin: Wizard Nav-->
+                            <div class="wizard-nav">
+                                <div class="wizard-steps" data-total-steps="3">
+                                    <!--begin::Wizard Step 1 Nav-->
+                                    <div class="wizard-step" data-wizard-type="step" data-wizard-state="@(step1 ? "current": "")">
+                                        <div class="wizard-wrapper">
+                                            <div class="wizard-number">1</div>
+                                            <div class="d-flex flex-column">
+                                                <div class="fw-bold">Địa chỉ giao hàng</div>
+                                                <div class="text-secondary">Thiết lập địa chỉ</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--end::Wizard Step 1 Nav-->
+                                    <!--begin::Wizard Step 2 Nav-->
+                                    <div class="wizard-step" data-wizard-type="step" data-wizard-state="@(step2 ? "current": "")">
+                                        <div class="wizard-wrapper">
+                                            <div class="wizard-number">2</div>
+                                            <div class="d-flex flex-column">
+                                                <div class="fw-bold">Thanh toán</div>
+                                                <div class="text-secondary">Hình thức thanh toán</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--end::Wizard Step 2 Nav-->
+                                    <!--begin::Wizard Step 3 Nav-->
+                                    <div class="wizard-step" data-wizard-type="step" data-wizard-state="@(step3 ? "current": "")">
+                                        <div class="wizard-wrapper">
+                                            <div class="wizard-number">3</div>
+                                            <div class="d-flex flex-column">
+                                                <div class="fw-bold">Đặt hàng</div>
+                                                <div class="text-secondary">Xem và xác nhận</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--end::Wizard Step 3 Nav-->
+                                </div>
+                            </div>
+                            <!--end: Wizard Nav-->
+                            <div class="card">
+                                <div class="card-body">
+                                    <EditForm Model="Request" OnValidSubmit="CreateOrder">
+                                        <DataAnnotationsValidator></DataAnnotationsValidator>
+                                        <div class="">
+                                            @if (step1)
+                                            {
+                                            <div class="pb-5" data-wizard-type="step-content" data-wizard-state="@(step1 ? "current": "")">
+                                                <h4 class="mb-5 fw-bold text-dark">Nhập thông tin của bạn</h4>
+                                                <div class="row mb-3">
+                                                    <div class="col-xl-6">
+                                                        <div class="">
+                                                            <label class="form-label">Người nhận: </label>
+                                                            <InputText type="text" class="form-control"
+                                                                       placeholder="Nhập vào đây" @bind-Value="Request.ShipName"></InputText>
+                                                            <span class="form-text text-muted">Nhập tên người nhận.</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-xl-6">
+                                                        <div class="form-group">
+                                                            <label class="form-label">Số điện thoại</label>
+                                                            <InputText type="text" class="form-control"
+                                                                       placeholder="phone" @bind-Value="Request.ShipPhone"></InputText>
+                                                            <span class="form-text text-muted">Nhập số điện thoại.</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Địa chỉ 1:</label>
+                                                    <InputTextArea type="text" class="form-control"
+                                                                   placeholder="Nhập vào đây" @bind-Value="Request.ShipAddress"></InputTextArea>
+                                                    <span class="form-text text-muted">Nhập địa chỉ của bạn.</span>
+                                                </div>
+                                            </div>
+                                            }
+                                            @if (step2)
+                                            {
+                                                <div class="pb-5" data-wizard-type="step-content" data-wizard-state="@(step2 ? "current": "")">
+                                                    <h4 class="mb-10 font-weight-bold text-dark">Enter your Payment Details</h4>
+                                                    <div class="row">
+                                                        <div class="col-xl-6">
+                                                            <div class="form-group">
+                                                                <label>Name on Card</label>
+                                                                <input type="text" class="form-control form-control-solid form-control-lg" name="ccname" placeholder="Card Name" value="John Wick" />
+                                                                <span class="form-text text-muted">Please enter your Card Name.</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-xl-6">
+                                                            <div class="form-group">
+                                                                <label>Card Number</label>
+                                                                <input type="text" class="form-control form-control-solid form-control-lg" name="ccnumber" placeholder="Card Number" value="4444 3333 2222 1111" />
+                                                                <span class="form-text text-muted">Please enter your Address.</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-xl-4">
+                                                            <div class="form-group">
+                                                                <label>Card Expiry Month</label>
+                                                                <input type="number" class="form-control form-control-solid form-control-lg" name="ccmonth" placeholder="Card Expiry Month" value="01" />
+                                                                <span class="form-text text-muted">Please enter your Card Expiry Month.</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-xl-4">
+                                                            <div class="form-group">
+                                                                <label>Card Expiry Year</label>
+                                                                <input type="number" class="form-control form-control-solid form-control-lg" name="ccyear" placeholder="Card Expire Year" value="21" />
+                                                                <span class="form-text text-muted">Please enter your Card Expiry Year.</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-xl-4">
+                                                            <div class="form-group">
+                                                                <label>Card CVV Number</label>
+                                                                <input type="password" class="form-control form-control-solid form-control-lg" name="cccvv" placeholder="Card CVV Number" value="123" />
+                                                                <span class="form-text text-muted">Please enter your Card CVV Number.</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                            @if (step3)
+                                            {
+                                                <!--begin: Wizard Step 3-->
+                                                <div class="pb-5" data-wizard-type="step-content" data-wizard-state="@(step3 ? "current": "")">
+                                                    <!--begin::Section-->
+                                                    <h4 class="mb-10 font-weight-bold text-dark">Xác nhận thông tin và đặt hàng</h4>
+                                                    <h6 class="font-weight-bolder mb-3">Thông tin địa chỉ gửi hàng:</h6>
+                                                    <div class="text-dark-50 line-height-lg">
+                                                        <div>@Request.ShipAddress</div>
+                                                        <div>@Request.ShipName</div>
+                                                        <div>@Request.ShipPhone</div>
+                                                    </div>
+                                                    <div class="separator separator-dashed my-5"></div>
+                                                    <!--end::Section-->
+                                                    <!--begin::Section-->
+                                                    <h6 class="font-weight-bolder mb-3">Chi tiết sản phẩm:</h6>
+                                                    <div class="text-dark-50 line-height-lg">
+                                                        <div class="table-responsive">
+                                                            <table class="table">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th class="pl-0 font-weight-bold text-muted text-uppercase">Sản phẩm</th>
+                                                                        <th class="text-right font-weight-bold text-muted text-uppercase">Số lượng</th>
+                                                                        <th class="text-right font-weight-bold text-muted text-uppercase">Giá</th>
+                                                                        <th class="text-right pr-0 font-weight-bold text-muted text-uppercase">Tổng</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    @if (Carts != null)
+                                                                    {
+                                                                        decimal total = 0;
+                                                                        foreach (var item in Carts)
+                                                                        {
+                                                                            <tr class="font-weight-boldest border-bottom-0">
+                                                                                <td class="border-top-0 pl-0 pt-7 d-flex align-items-center">
+                                                                                    <!--begin::Symbol-->
+                                                                                    <div class="symbol symbol-40 flex-shrink-0 mr-4 bg-light">
+                                                                                        <div class="symbol-label" style="background: url('@item.ImagePath') no-repeat round"></div>
+                                                                                    </div>
+                                                                                    <!--end::Symbol-->
+                                                                                    @item.Name
+                                                                                </td>
+                                                                                <td class="border-top-0 text-right pt-7 align-middle">@item.Quantity</td>
+                                                                                <td class="border-top-0 text-right pt-7 align-middle">@item.Price</td>
+                                                                                <td class="text-primary border-top-0 pr-0 pt-7 text-right align-middle">@item.SubTotal.ToString("c")</td>
+                                                                            </tr>
+                                                                            total += item.SubTotal;
+                                                                        }
+                                                                        <tr>
+                                                                            <td colspan="3" class="font-weight-bolder text-right">Tổng tiền sản phẩm</td>
+                                                                            <td class="font-weight-bolder text-right pr-0">@total.ToString("c")</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td colspan="3" class="border-0 pt-0 font-weight-bolder text-right">Phí vận chuyển</td>
+                                                                            <td class="border-0 pt-0 font-weight-bolder text-right pr-0">$15.00</td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td colspan="3" class="border-0 pt-0 font-weight-bolder font-size-h5 text-right">Tổng thanh toán</td>
+                                                                            <td class="border-0 pt-0 font-weight-bolder font-size-h5 text-success text-right pr-0">@((total+15).ToString("c"))</td>
+                                                                        </tr>
+                                                                    }
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                    <div class="separator separator-dashed my-5"></div>
+                                                    <!--end::Section-->
+                                                    <!--begin::Section-->
+                                                    <h6 class="font-weight-bolder mb-3">Dịch vụ giao hàng:</h6>
+                                                    <div class="text-dark-50 line-height-lg">
+                                                        <div>GHN</div>
+                                                        <div>Thời gian nhận hàng: 8:00AM - 17:00PM</div>
+                                                    </div>
+                                                    <!--end::Section-->
+                                                </div>
+                                                <!--end: Wizard Step 3-->
+                                            }
+
+                                            <!--begin: Wizard Actions-->
+                                            <div class="d-flex justify-content-between">
+                                                @if (step2 || step3)
+                                                {
+                                                    <div class="mr-2">
+                                                        <button type="button" @onclick="HandlePrevius"
+                                                                class="btn btn-outline-light fw-bolder text-uppercase px-4 py-2 text-dark">
+                                                            Quay lại
+                                                        </button>
+                                                    </div>
+                                                }
+                                                <div>
+                                                    @if (step1 || step2)
+                                                    {
+                                                        <button class="btn btn-primary text-uppercase fw-bolder px-4 py-2"
+                                                                type="button" @onclick="HandleNext">
+                                                            Tiếp tục
+                                                        </button>
+                                                    }
+                                                    @if (step3)
+                                                    {
+                                                        <button type="submit" class="btn btn-success fw-bolder text-uppercase px-4 py-2">
+                                                            Xác nhận
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <!--end: Wizard Actions-->
+                                        </div>
+                                    </EditForm>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ICartApiClient CartApiClient
+@inject IOrderApiClient OrderApiClient
+@inject IUserApiClient UserApiClient
+@inject NavigationManager NavigationManager
+@inject IToastService ToastService
+@attribute [Authorize]
+
+@code {
+    private bool step1 = true, step2 = false, step3 = false;
+    private void HandleNext()
+    {
+        if (step1)
+        {
+            if (string.IsNullOrEmpty(Request.ShipAddress) || string.IsNullOrEmpty(Request.ShipName) || string.IsNullOrEmpty(Request.ShipPhone))
+            {
+                ToastService.ShowWarning("Nhập đầy đủ thông tin", "Yêu cầu");
+                return;
+            }
+            step2 = true;
+            step1 = false;
+            step3 = false;
+        }
+        else
+        {
+            step1 = false;
+            step2 = false;
+            step3 = true;
+        }
+        StateHasChanged();
+    }
+    private void HandlePrevius()
+    {
+        if (step3)
+        {
+            step1 = false;
+            step2 = true;
+            step3 = false;
+        }
+        else
+        {
+            step1 = true;
+            step2 = false;
+            step3 = false;
+        }
+        StateHasChanged();
+    }
+    public IEnumerable<CartVm> Carts { get; set; }
+    private AuthenticationState authState;
+    private string userName;
+    public OrderRequest Request { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Request = new OrderRequest();
+        authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        userName = authState.User.Identity.Name.ToString();
+        Carts = await CartApiClient.GetByUserName(userName);
+        var user = await UserApiClient.GetByUserName(userName);
+        Request.UserId = user.Id;
+        Request.ShipName = user.FirstName + " " + user.LastName;
+        Request.ShipPhone = user.PhoneNumber;
+        Request.ShipAddress = user.Address;
+    }
+
+    private async void CreateOrder(EditContext context)
+    {
+        var result = await OrderApiClient.Create(Request);
+        if (result)
+        {
+            ToastService.ShowSuccess("Đặt hàng thành công", "Thông báo");
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            ToastService.ShowError("Đặt hàng thất bại", "Thông báo");
+        }
+    }
+}

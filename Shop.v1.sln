@@ -1,0 +1,60 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30804.86
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RacoShop.Utilities", "RacoShop.Utilities\RacoShop.Utilities.csproj", "{0C49F681-7F37-40FD-B388-8D5DA4C1B9CF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RacoShop.ViewModel", "RacoShop.ViewModel\RacoShop.ViewModel.csproj", "{A38DB7E5-5363-411A-8022-6DF304028BFA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RacoShop.BackendApi", "RacoShop.BackendApi\RacoShop.BackendApi.csproj", "{0C3BE7A2-7B41-4FA8-A530-44A5E77D53E6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{90DADE84-9D31-4DF2-85C9-54ACB00ADEB2}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RacoShop.AdminApp", "RacoShop.AdminApp\RacoShop.AdminApp.csproj", "{91B74B2D-6479-4276-9CCC-49F9B83E4665}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RacoShop.ApiIntergration", "RacoShop.ApiIntergration\RacoShop.ApiIntergration.csproj", "{E1A19486-F377-4907-A6D7-FA96D7BAEC80}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RacoShop.Web", "RacoShop.Web\RacoShop.Web.csproj", "{731B60D4-8A0F-49BA-AE28-557FED4B09D4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0C49F681-7F37-40FD-B388-8D5DA4C1B9CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C49F681-7F37-40FD-B388-8D5DA4C1B9CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C49F681-7F37-40FD-B388-8D5DA4C1B9CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C49F681-7F37-40FD-B388-8D5DA4C1B9CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A38DB7E5-5363-411A-8022-6DF304028BFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A38DB7E5-5363-411A-8022-6DF304028BFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A38DB7E5-5363-411A-8022-6DF304028BFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A38DB7E5-5363-411A-8022-6DF304028BFA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C3BE7A2-7B41-4FA8-A530-44A5E77D53E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C3BE7A2-7B41-4FA8-A530-44A5E77D53E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C3BE7A2-7B41-4FA8-A530-44A5E77D53E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C3BE7A2-7B41-4FA8-A530-44A5E77D53E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91B74B2D-6479-4276-9CCC-49F9B83E4665}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91B74B2D-6479-4276-9CCC-49F9B83E4665}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91B74B2D-6479-4276-9CCC-49F9B83E4665}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91B74B2D-6479-4276-9CCC-49F9B83E4665}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1A19486-F377-4907-A6D7-FA96D7BAEC80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1A19486-F377-4907-A6D7-FA96D7BAEC80}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1A19486-F377-4907-A6D7-FA96D7BAEC80}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1A19486-F377-4907-A6D7-FA96D7BAEC80}.Release|Any CPU.Build.0 = Release|Any CPU
+		{731B60D4-8A0F-49BA-AE28-557FED4B09D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{731B60D4-8A0F-49BA-AE28-557FED4B09D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{731B60D4-8A0F-49BA-AE28-557FED4B09D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{731B60D4-8A0F-49BA-AE28-557FED4B09D4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DC7871AA-91E8-4E26-BBD8-B4720AD6A8B8}
+	EndGlobalSection
+EndGlobal

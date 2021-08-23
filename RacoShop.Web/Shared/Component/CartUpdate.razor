@@ -1,0 +1,75 @@
+﻿@if (Cart != null)
+{
+<li>
+    <a href="javascript:void(0)" class="remove" title="Remove this item">
+        <i class="lni lni-close"></i>
+    </a>
+    <div class="cart-img-head">
+        <a class="cart-img" href="product/@Cart.ProductId">
+            <img src="@Cart.ImagePath" alt="#">
+        </a>
+    </div>
+    <div class="content">
+        <h4>
+            <a href="product/@Cart.ProductId">@Cart.Name</a>
+        </h4>
+        <div class="d-flex">
+            <a type="button" @onclick="DecreaseQuantity" class="rounded-circle p-0">
+                <i class="lni lni-circle-minus"></i>
+            </a>
+            <p class="quantity mx-1">@Cart.Quantity</p>
+            <a type="button" @onclick="IncreaseQuantity" class="rounded-circle p-0">
+                <i class="lni lni-circle-plus"></i>
+            </a>
+            <span class="amount mx-1">@Cart.Price.ToString("C")</span>
+        </div>
+        
+    </div>
+</li>
+}
+else
+{
+    <LoadingIndicator></LoadingIndicator>
+}
+@inject ICartApiClient CartApiClient
+@code {
+    [Parameter]
+    public CartVm Cart { get; set; }
+    [Parameter]
+    public EventCallback Callback { get; set; }
+    private CartRequest request;
+
+    protected override void OnParametersSet()
+    {
+        request = new CartRequest();
+    }
+
+    private async void IncreaseQuantity()
+    {
+        request.ProductId = Cart.ProductId;
+        request.UserId = Cart.UserId;
+        request.Quantity = Cart.Quantity + 1;
+        var result = await CartApiClient.AddToCart(request);
+        if (result) await Callback.InvokeAsync();
+    }
+
+    private async void DecreaseQuantity()
+    {
+
+        bool result;
+        if (Cart.Quantity <= 1)
+        {
+            result = await CartApiClient.DeleteProduct(Cart.UserId, Cart.ProductId);
+        }
+        else
+        {
+            request.Quantity = Cart.Quantity - 1;
+            request.ProductId = Cart.ProductId;
+            request.UserId = Cart.UserId;
+            result = await CartApiClient.AddToCart(request);
+        }
+        if (result) await Callback.InvokeAsync();
+    }
+
+
+}

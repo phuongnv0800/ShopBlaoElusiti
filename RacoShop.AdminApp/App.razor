@@ -1,0 +1,30 @@
+@using RacoShop.AdminApp.Features
+
+<CascadingAuthenticationState>
+    <CascadingBlazoredModal>
+            <Router AppAssembly="@typeof(Program).Assembly" PreferExactMatches="@true">
+                <Found Context="routeData">
+                    <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                        <NotAuthorized>
+                                <RedirectToLogin />
+                        </NotAuthorized>
+                    </AuthorizeRouteView>
+                </Found>
+                <NotFound>
+                    <LayoutView Layout="@typeof(EmptyLayout)">
+                        <body id="kt_body" 
+                              class="header-fixed header-mobile-fixed subheader-enabled subheader-fixed aside-enabled aside-fixed aside-minimize-hoverable page-loading">
+                            <div class="d-flex flex-column flex-root">
+                                <div class="error error-6 d-flex flex-row-fluid bgi-size-cover bgi-position-center" style="background-image: url(assets/media/error/bg6.jpg);">
+                                    <div class="d-flex flex-column flex-row-fluid text-center">
+                                        <h1 class="error-title font-weight-boldest text-white mb-12" style="margin-top: 12rem;">Oops...</h1>
+                                        <p class="display-4 font-weight-bold text-white">Looks like something went wrong.We're working on it</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </body>
+                    </LayoutView>
+                </NotFound>
+            </Router>
+    </CascadingBlazoredModal>
+</CascadingAuthenticationState>

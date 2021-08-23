@@ -1,0 +1,11 @@
+﻿<div class="scroll-top rounded-circle" @onclick="OnButtonClick">
+    <i class="lni lni-chevron-up"></i>
+</div>
+@inject IJSRuntime JsRuntime
+@code {
+
+    private async void OnButtonClick()
+    {
+        await JsRuntime.InvokeVoidAsync("OnScrollEvent");
+    }
+}

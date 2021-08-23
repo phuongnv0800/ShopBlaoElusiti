@@ -1,0 +1,32 @@
+﻿@inject ICartApiClient CartApiClient
+@inject IToastService ToastService
+<div class="simple-form">
+    <div class="form-group pb-4">
+        Bạn muốn xoá sản phẩm khỏi giỏ hàng
+    </div>
+
+    <button @onclick="Yes" class="btn btn-outline-danger">Xoá</button>
+    <button @onclick="No" class="btn btn-primary">Huỷ</button>
+</div>
+
+@code {
+    [CascadingParameter]
+    BlazoredModalInstance ModalInstance { get; set; }
+
+    [Parameter]
+    public int ProductId { get; set; }
+    [Parameter]
+    public Guid UserId { get; set; }
+    void Yes()
+    {
+        CartApiClient.DeleteProduct(UserId, ProductId);
+        ToastService.ShowError("Xoá thành công", "Xoá sản phẩm");
+        ModalInstance.CloseAsync(ModalResult.Ok<bool>(true));
+    }
+
+    void No()
+    {
+        ModalInstance.CloseAsync(ModalResult.Cancel());
+    }
+
+}

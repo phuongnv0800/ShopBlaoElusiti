@@ -1,0 +1,69 @@
+﻿@if (Cart != null)
+{
+    <td class="d-flex align-items-center font-weight-bolder">
+        <!--begin::Symbol-->
+        <div class="symbol symbol-60 flex-shrink-0 mr-4 bg-light">
+            <div class="symbol-label bg-white"
+                    style="background: url('@(Cart.ImagePath != null ? Cart.ImagePath : "")') no-repeat round"></div>
+        </div>
+        <!--end::Symbol-->
+        <a href="/product/@Cart.ProductId" class="text-dark text-hover-primary">@Cart.Name</a>
+    </td>
+    <td class="text-center align-middle">
+        <a @onclick="DecreaseQuantity" class="btn btn-xs btn-light-success btn-icon mr-2">
+            <i class="ki ki-minus icon-xs"></i>
+        </a>
+        <span class="mr-2 font-weight-bolder">@Cart.Quantity</span>
+        <a @onclick="IncreaseQuantity" class="btn btn-xs btn-light-success btn-icon">
+            <i class="ki ki-plus icon-xs"></i>
+        </a>
+    </td>
+    <td class="text-right align-middle font-weight-bolder font-size-h5">@Cart.SubTotal.ToString("c")</td>
+}
+else
+{
+    <LoadingIndicator></LoadingIndicator>
+}
+@inject ICartApiClient CartApiClient
+@code {
+
+    [Parameter]
+    public CartVm Cart { get; set; }
+    [Parameter]
+    public EventCallback Callback { get; set; }
+    private CartRequest request;
+
+    protected override void OnInitialized()
+    {
+        request = new CartRequest();
+    }
+
+    private async void IncreaseQuantity()
+    {
+        request.ProductId = Cart.ProductId;
+        request.UserId = Cart.UserId;
+        request.Quantity = Cart.Quantity + 1;
+        var result = await CartApiClient.AddToCart(request);
+        if (result) await Callback.InvokeAsync();
+    }
+
+    private async void DecreaseQuantity()
+    {
+
+        bool result;
+        if(Cart.Quantity <= 1)
+        {
+            result = await CartApiClient.DeleteProduct(Cart.UserId, Cart.ProductId);
+        }
+        else
+        {
+            request.Quantity = Cart.Quantity - 1;
+            request.ProductId = Cart.ProductId;
+            request.UserId = Cart.UserId;
+            result = await CartApiClient.AddToCart(request);
+        }
+        if(result) await Callback.InvokeAsync();
+    }
+
+    
+}

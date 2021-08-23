@@ -1,0 +1,23 @@
+﻿@switch (OrderStatus)
+{
+    case OrderStatus.InProgress:
+        <span class="bg-warning text-nowrap rounded-pill px-3">@nameof(OrderStatus.InProgress)</span>
+        break;
+    case OrderStatus.Confirmed:
+        <span class="bg-primary text-nowrap rounded-pill px-3">@nameof(OrderStatus.Confirmed)</span>
+        break;
+    case OrderStatus.Shipping:
+        <span class="bg-info text-nowrap rounded-pill px-3">@nameof(OrderStatus.Shipping)</span>
+        break;
+    case OrderStatus.Success:
+        <span class="bg-success text-nowrap rounded-pill px-3">@nameof(OrderStatus.Success)</span>
+        break;
+    case OrderStatus.Canceled:
+        <span class="bg-danger text-nowrap rounded-pill px-3">@nameof(OrderStatus.Canceled)</span>
+        break;
+}
+
+@code {
+    [Parameter]
+    public OrderStatus OrderStatus { get; set; }
+}
