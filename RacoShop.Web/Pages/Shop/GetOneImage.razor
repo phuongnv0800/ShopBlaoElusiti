@@ -1,0 +1,18 @@
+﻿@if (image != null)
+{
+    <img src="@image.ImagePath" alt="@image.Caption">
+}
+else
+{
+    <img src="assets/images/products/product-1.jpg" alt="">
+}
+@inject IProductApiClient ProductApiClient
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    private ProductImageVm image = new ProductImageVm();
+    protected override async Task OnInitializedAsync()
+    {
+        image = (await ProductApiClient.GetImageAll(Id)).FirstOrDefault();
+    }
+}

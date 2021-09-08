@@ -11,6 +11,10 @@ namespace RacoShop.BackendApi.Entities
         public string Name { get; set; }
         public string ImagePath { get; set; }
         public bool IsShowHome { get; set; }
-        public string Alt { get; set; }
+        public long Size { get; set; }
+        public DateTime DateCreated { get; set; }
+        public string Caption { get; set; }
+        public int ProductId { get; set; } 
+        public Product Product { get; set; }        
     }
 }

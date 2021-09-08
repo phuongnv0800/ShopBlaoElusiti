@@ -1,0 +1,33 @@
+﻿@if (ProductImages != null)
+{
+    <main id="gallery">
+        <div class="main-img">
+            <img src="@image" id="current" alt="#">
+        </div>
+        <div class="images d-flex justify-content-between">
+            @foreach (var item in ProductImages)
+            {
+                <img @onclick="()=>OnChangeImage(item.ImagePath)" src="@item.ImagePath" class="img" alt="@item.Caption">
+            }
+        </div>
+    </main>
+}
+
+@inject IProductApiClient productApiClient
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    public List<ProductImageVm> ProductImages { get; set; }
+
+    private string image;
+    protected override async Task OnInitializedAsync()
+    {
+        ProductImages = await productApiClient.GetImageAll(Id);
+        image = ProductImages.FirstOrDefault().ImagePath;
+    }
+    private void OnChangeImage(string img)
+    {
+        image = img;
+        //StateHasChanged();
+    }
+}

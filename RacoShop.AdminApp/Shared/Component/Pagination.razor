@@ -1,24 +1,24 @@
-﻿<div class="d-flex justify-content-between align-items-center flex-wrap w-100">
-    <div class="d-flex flex-wrap mr-3">
+﻿
+<nav class="d-flex justify-content-between">
+    <ul class="pagination pagination-sm pagination-gutter m-0">
         @foreach (var link in _links)
-        {
-            <a type="button" @onclick="() => OnSelectedPage(link)" class="btn btn-icon btn-sm border-0 btn-light-primary
-                   btn-hover-primary mr-2 my-1 font-weight-bold @(link.Enabled ? null : "disabled") @(link.Active ? "active" : null)">@link.Text</a>
-            }
-    </div>
+        { 
+        <li class="page-item @(link.Enabled ? null : "disabled") @(link.Active ? "active" : null)">
+            <a class="page-link" @onclick="() => OnSelectedPage(link)">@link.Text</a>
+        </li>
+        }
+     </ul>
     <div class="d-flex align-items-center">
-        <select class="form-control form-control-sm text-primary font-weight-bold mr-4 border-0 bg-light-primary" style="width: 75px;"
-                @onchange="HandleChange">
+        <select class="default-select form-control form-control-sm wide me-3" @onchange="HandleChange" style="width: 75px;height:40px">
             <option value="10">10</option>
             <option value="20">20</option>
             <option value="30">30</option>
             <option value="50">50</option>
             <option value="100">100</option>
         </select>
-        <span class="text-muted">Displaying @MetaData.PageSize of @MetaData.TotalCount records</span>
+        <span class="text-muted">Displaying @MetaData.PageSize of @MetaData.TotalRecord records</span>
     </div>
-</div>
-
+</nav>
 
 @code {
     [Parameter]
@@ -48,7 +48,6 @@
     private void CreatePaginationLinks()
     {
         _links = new List<PagingLink>();
-        _links.Add(new PagingLink(1, MetaData.HasPrevius, "<<"));
         _links.Add(new PagingLink(MetaData.CurrentPage - 1, MetaData.HasPrevius, "<"));
         for (int i = 1; i <= MetaData.TotalPages; i++)
         {
@@ -61,7 +60,6 @@
             }
         }
         _links.Add(new PagingLink(MetaData.CurrentPage + 1, MetaData.HasNext, ">"));
-        _links.Add(new PagingLink(MetaData.TotalPages, MetaData.HasNext, ">>"));
     }
     private async Task OnSelectedPage(PagingLink link)
     {

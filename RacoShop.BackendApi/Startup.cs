@@ -15,8 +15,6 @@ using RacoShop.Utilities.Constants;
 using System.Text;
 using RacoShop.BackendApi.Service.System;
 using RacoShop.BackendApi.Service.Catalog;
-using FluentValidation.AspNetCore;
-using RacoShop.ViewModel.System.Users;
 using System.Collections.Generic;
 
 namespace RacoShop.BackendApi
@@ -33,10 +31,8 @@ namespace RacoShop.BackendApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //    services.AddDbContext<ShopDbContext>(options =>
-            //        options.UseSqlServer(Configuration.GetConnectionString(SystemConstants.MainConnectionString)));
             services.AddDbContext<ShopDbContext>(options =>
-                options.UseSqlite(Configuration.GetConnectionString(SystemConstants.MainConnectionString)));
+                options.UseSqlServer(Configuration.GetConnectionString(SystemConstants.MainConnectionString)));
 
             services.AddIdentity<AppUser, AppRole>()
                 .AddEntityFrameworkStores<ShopDbContext>()
@@ -54,12 +50,8 @@ namespace RacoShop.BackendApi
             services.AddTransient<ICategoryService, CategoryService>();
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<IRoleService, RoleService>();
-            //fluent validator
-            //services.AddTransient<IValidator<LoginRequest>, LoginRequestValidator>();
-            //services.AddTransient<IValidator<RegisterRequest>, RegisterRequestValidator>();
 
-            services.AddControllers()
-                .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<LoginRequestValidator>());
+            services.AddControllers();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "RacoShop.BackendApi", Version = "v1" });

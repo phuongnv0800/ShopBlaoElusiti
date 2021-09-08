@@ -90,7 +90,7 @@ namespace RacoShop.BackendApi.Service.Catalog
             {
                 MetaData = new MetaData()
                 {
-                    TotalCount = totalRow,
+                    TotalRecord = totalRow,
                     PageSize = request.PageSize,
                     CurrentPage = request.PageNumber,
                     TotalPages = (int)Math.Ceiling((double)totalRow / request.PageSize),
@@ -123,7 +123,7 @@ namespace RacoShop.BackendApi.Service.Catalog
             {
                 MetaData = new MetaData()
                 {
-                    TotalCount = totalRow,
+                    TotalRecord = totalRow,
                     PageSize = request.PageSize,
                     CurrentPage = request.PageNumber,
                     TotalPages = (int)Math.Ceiling((double)totalRow / request.PageSize),

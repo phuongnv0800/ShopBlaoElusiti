@@ -16,7 +16,7 @@ namespace RacoShop.ViewModel.Common
         {
             MetaData = new MetaData()
             {
-                TotalCount = count,
+                TotalRecord = count,
                 PageSize = pageSize,
                 CurrentPage = pageNumber,
                 TotalPages = (int)Math.Ceiling(count / (double)pageSize)

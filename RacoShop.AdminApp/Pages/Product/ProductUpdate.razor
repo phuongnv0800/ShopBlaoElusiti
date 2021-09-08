@@ -1,0 +1,160 @@
+﻿@inject IToastService ToastService
+@inject IProductApiClient ProductApiClient
+    <style>
+        /* width */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        /* Track */
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        /* Handle */
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+        }
+
+            /* Handle on hover */
+            ::-webkit-scrollbar-thumb:hover {
+                background: #555;
+            }
+    </style>
+<div class="simple-form p-2" style="width: 540px;height:560px;overflow-y:scroll; overflow-x:hidden">
+    <EditForm Model="productUpdate" OnValidSubmit="Update">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="mb-3">
+            <label for="name" class="form-label">Name</label>
+            <InputText class="form-control" id="name" @bind-Value="@productUpdate.Name" />
+        </div>
+        <div class="mb-3">
+            <label for="Price" class="form-label">Price</label>
+            <InputNumber class="form-control" id="Price" @bind-Value="@productUpdate.Price" />
+        </div>
+        <div class="mb-3">
+            <label for="Discount" class="form-label">Discount</label>
+            <InputNumber class="form-control" id="Discount" @bind-Value="@productUpdate.Discount" />
+        </div>
+        <div class="mb-3">
+            <label for="Quantity" class="form-label">Quantity</label>
+            <InputNumber class="form-control" id="Quantity" @bind-Value="@productUpdate.Quantity" />
+        </div>
+        <div class="mb-3">
+            <label for="Rating" class="form-label">Rating</label>
+            <InputNumber class="form-control" id="Rating" @bind-Value="@productUpdate.Rating" />
+        </div>
+        <div class="mb-3">
+            <label for="RatingCount" class="form-label">Rating Count</label>
+            <InputNumber class="form-control" id="RatingCount" @bind-Value="@productUpdate.RatingCount" />
+        </div>
+        <div class="mb-3 row">
+            <div class="col-lg-6">
+                <label class="col-form-label">Product Color</label>
+                <div class="col-form-label">
+                    <div class="radio-inline">
+                        <InputRadioGroup @bind-Value="productUpdate.ProductColor">
+                            @foreach (var item in (ProductColor[])Enum.GetValues(typeof(ProductColor)))
+                            {
+                                <div class="form-check mb-2">
+                                    <InputRadio Value="item" class="form-check-input" />
+                                    <label class="form-check-label me-3">
+                                        @item
+                                    </label>
+                                </div>
+                            }
+                        </InputRadioGroup>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <label class="col-form-label">Product Color</label>
+                <div class="col-form-label">
+                    <div class="radio-inline">
+                        <InputRadioGroup @bind-Value="productUpdate.ProductMovement">
+                            @foreach (var item in (ProductMovement[])Enum.GetValues(typeof(ProductMovement)))
+                            {
+                                <div class="form-check mb-2">
+                                    <InputRadio Value="item" class="form-check-input" />
+                                    <label class="form-check-label me-3">
+                                        @item
+                                    </label>
+                                </div>
+                            }
+                        </InputRadioGroup>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="Description" class="form-label">Description</label>
+            <InputTextArea style="height: 100px" class="form-control" id="Description" @bind-Value="@productUpdate.Description" />
+        </div>
+        <button type="submit" class="btn btn-sm btn-primary me-3">Cập nhật</button>
+        <button type="button" @onclick="ModalInstance.CancelAsync" class="btn btn-sm btn-danger">Huỷ bỏ</button>
+    </EditForm>
+    
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    [CascadingParameter]
+    BlazoredModalInstance ModalInstance { get; set; }
+
+    private ProductRequest productUpdate= new ProductRequest();
+
+    //protected override async Task OnAfterRenderAsync(bool firstRender)
+    //{
+    //    await SetProduct();
+    //}
+    protected override async Task OnInitializedAsync()
+    {
+        await SetProduct();
+    }
+    private async Task SetProduct()
+    {
+        var product = await ProductApiClient.GetById(Id);
+        productUpdate.Id = product.Id;
+        productUpdate.Name = product.Name;
+        productUpdate.Description = product.Description;
+        productUpdate.Price = product.Price;
+        productUpdate.Quantity = product.Quantity;
+        productUpdate.ProductMovement = product.ProductMovement;
+        productUpdate.ProductColor = product.ProductColor;
+        productUpdate.Rating = product.Rating;
+        productUpdate.RatingCount = productUpdate.RatingCount;
+        StateHasChanged();
+    }
+    private async Task Update()
+    {
+        var result = await ProductApiClient.UpdateProduct(Id, productUpdate);
+        if (result)
+        {
+            ToastService.ShowSuccess($"Cập nhật thành công", $"Thông báo");
+        }
+        else
+        {
+            ToastService.ShowError("Cập nhật thất bại", $"Thông báo");
+        }
+        await ModalInstance.CloseAsync(ModalResult.Ok<string>("thành công"));
+    }
+
+    //public async Task HandleFileSelection(InputFileChangeEventArgs e)
+    //{
+    //    var file = e.File;
+    //    long maxFileSize = 512 * 512;
+    //    try
+    //    {
+    //        var fileContent = new StreamContent(file.OpenReadStream(maxFileSize));
+    //        productUpdate.ImageByte = await fileContent.ReadAsByteArrayAsync();
+
+    //    }
+    //    catch (Exception)
+    //    {
+    //        //Logger.LogError($"File: {file.Name} Error: {ex.Message}");
+    //    }
+    //}
+}

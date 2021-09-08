@@ -10,7 +10,7 @@ namespace RacoShop.BackendApi.Service.Common
     public class FileStorageService : IStorageService
     {
         private readonly string _userContentFolder;
-        private const string USER_CONTENT_FOLDER_NAME = "image";
+        private const string USER_CONTENT_FOLDER_NAME = "images";
 
         public FileStorageService(IWebHostEnvironment webHostEnvironment)
         {

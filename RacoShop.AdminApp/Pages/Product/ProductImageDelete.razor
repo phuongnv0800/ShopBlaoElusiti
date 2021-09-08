@@ -1,0 +1,31 @@
+﻿@inject IToastService ToastService
+@inject IProductApiClient ProductApiClient
+
+<div class="simple-form">
+    <div class="form-group pb-4">
+        Are you sure you want to delete the record?
+    </div>
+
+    <button @onclick="Yes" class="btn btn-sm me-3 btn-outline-danger">Delete</button>
+    <button @onclick="No" class="btn btn-sm btn-primary">Cancel</button>
+</div>
+
+@code {
+    [CascadingParameter]
+    BlazoredModalInstance ModalInstance { get; set; }
+
+    [Parameter]
+    public int Id { get; set; }
+    async Task Yes()
+    {
+        await ProductApiClient.DeleteImage(Id);
+        ToastService.ShowSuccess("Xoá thành công", "Thông báo");
+        await ModalInstance.CloseAsync(ModalResult.Ok<bool>(true));
+    }
+
+    void No()
+    {
+        ModalInstance.CloseAsync(ModalResult.Cancel());
+    }
+
+}

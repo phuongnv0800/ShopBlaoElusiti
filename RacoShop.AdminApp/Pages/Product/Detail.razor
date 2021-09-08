@@ -1,0 +1,181 @@
+﻿@page "/product/{id:int}"
+
+@inject IProductApiClient productApiClient
+@inject IToastService ToastService
+@attribute [Authorize]
+<div class="row page-titles">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active">
+            <a href="/">Home</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="/product">Product</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a role="button">Detail</a>
+        </li>
+    </ol>
+</div>
+<div class="row">
+    @if (product != null)
+    {
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Product: <b>@product.Name</b></h4>
+                    <button @onclick="() => CreateImage(product.Id)" class="btn btn-primary shadow">
+                        Thêm ảnh
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="basic-list-group">
+                        <ul class="list-group">
+                            <li class="list-group-item">Giá: <b>@product.Price</b></li>
+                            <li class="list-group-item">Loại sản phẩm: <b>@product.CategoryName</b></li>
+                            <li class="list-group-item">Số lượng: <b>@product.Quantity</b></li>
+                            <li class="list-group-item">Giảm giá: <b>@product.Discount&nbsp;%</b></li>
+                            <li class="list-group-item">Đánh giá: <b>@product.Rating</b></li>
+                            <li class="list-group-item">Số lượng đánh giá: <b>@product.RatingCount</b></li>
+                            <li class="list-group-item">Màu sắc: <b>@product.ProductColor</b></li>
+                            <li class="list-group-item">Kiểu loại: <b>@product.ProductMovement</b></li>
+                            <li class="list-group-item">Chi tiết: <b>@product.Description</b></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Product Image</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-responsive-md">
+                            <thead>
+                                <tr>
+                                    <th>Id</th>
+                                    <th>Name</th>
+                                    <th>IsShowHome</th>
+                                    <th>Size</th>
+                                    <th>Date Created</th>
+                                    <th>Caption</th>
+                                    <th>Hàng động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (images != null && images.Count > 0)
+                                {
+                                    <Virtualize Context="item" Items="images">
+                                        <ItemContent>
+                                            <tr>
+                                                <td>@item.Id</td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <img src="@item.ImagePath" class="rounded-lg me-2" width="48" alt="" />
+                                                        <span class="w-space-no">@item.Name</span>
+                                                    </div>
+                                                </td>
+                                                <td>@item.IsShowHome</td>
+                                                <td>@item.Size bytes</td>
+                                                <td>@item.DateCreated</td>
+                                                <td>@item.Caption</td>
+                                                <td>
+                                                    <div class="d-flex justify-content-center">
+                                                        <a role="button" @onclick="() => OnUpdate(item.Id)"
+                                                           class="btn btn-primary shadow btn-xs sharp me-3">
+                                                            <i class="fa fa-pencil"></i>
+                                                        </a>
+                                                        <a role="button" @onclick="() => OnDelete(item.Id)"
+                                                           class="btn btn-danger shadow btn-xs sharp">
+                                                            <i class="fa fa-trash"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </ItemContent>
+                                        <Placeholder>
+                                            <tr>
+                                                <td>Loading...</td>
+                                            </tr>
+                                        </Placeholder>
+                                    </Virtualize>
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="7">No Images.</td>
+                                    </tr>
+                                }
+
+
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <LoadingIndicator/>
+    }
+</div>
+
+
+@code {
+    [CascadingParameter]
+    public IModalService Modal { get; set; }
+    [Parameter]
+    public int Id { get; set; }
+
+    private ProductVm product;
+    private List<ProductImageVm> images;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetProduct();
+    }
+    private async Task CreateImage(int productId)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(ProductImageCreate.Id), productId);
+        var moviesModal = Modal.Show<ProductImageCreate>("Thêm ảnh", parameters);
+        var result = await moviesModal.Result;
+
+        if (!result.Cancelled)
+        {
+            await GetProduct();
+        }
+    }
+    private async Task GetProduct()
+    {
+        product = await productApiClient.GetById(Id);
+        images = await productApiClient.GetImageAll(Id);
+    }
+    private async Task OnUpdate(int Id)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(ProductImageUpdate.Id), Id);
+        var moviesModal = Modal.Show<ProductImageUpdate>("Cập nhật ảnh", parameters);
+        var result = await moviesModal.Result;
+
+        if (!result.Cancelled)
+        {
+            await GetProduct();
+        }
+    }
+    private async Task OnDelete(int Id)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(ProductImageDelete.Id), Id);
+        var moviesModal = Modal.Show<ProductImageDelete>("Xoá ảnh", parameters);
+        var result = await moviesModal.Result;
+
+        if (!result.Cancelled)
+        {
+            await GetProduct();
+        }
+    }
+}

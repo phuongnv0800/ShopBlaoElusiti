@@ -1,0 +1,92 @@
+﻿@inject IToastService ToastService
+@inject IProductApiClient ProductApiClient
+<div class="simple-form" style="width: 500px">
+    <EditForm Model="imageRequest" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="mb-3">
+            <label for="@nameof(imageRequest.Name)">@nameof(imageRequest.Name)</label>
+            <InputText class="form-control" id="@nameof(imageRequest.Name)" @bind-Value="imageRequest.Name" />
+            <ValidationMessage For="@(() => imageRequest.Name)" />
+        </div>
+        <div class="mb-3">
+            <label for="@nameof(imageRequest.Caption)">@nameof(imageRequest.Caption)</label>
+            <InputText class="form-control" id="@nameof(imageRequest.Caption)" @bind-Value="imageRequest.Caption" />
+            <ValidationMessage For="@(() => imageRequest.Caption)" />
+        </div>
+        <div class="mb-3 row">
+            <div class="col-8">
+                <div class="row">
+                    <label class="col-3 col-form-label" for="@nameof(imageRequest.IsShowHome)">@nameof(imageRequest.IsShowHome)</label>
+                    <div class="col-9 col-form-label">
+                        <div class="checkbox-inline">
+                            <label class="checkbox checkbox-success">
+                                <InputCheckbox class="form-check-input" id="@nameof(imageRequest.IsShowHome)" @bind-Value="imageRequest.IsShowHome" />
+                                <span></span>
+                            </label>
+                        </div>
+                    </div>
+                    <label class="col-3 col-form-label">Image: </label>
+                    <InputFile class="col-9 col-form-label" OnChange="HandleFileSelection" />
+                </div>
+            </div>
+            <div class="col-4">
+                <img src="@imagePath" alt="anh" width="100">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-success me-3">Thêm ảnh</button>
+        <button type="button" @onclick="ModalInstance.CancelAsync" class="btn btn-secondary">Huỷ bỏ</button>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    [CascadingParameter]
+    BlazoredModalInstance ModalInstance { get; set; }
+
+    private ProductImageRequest imageRequest = new ProductImageRequest();
+    private MultipartFormDataContent content = new MultipartFormDataContent();
+    private string imagePath;
+    protected override async Task OnInitializedAsync()
+    {
+        var image = await ProductApiClient.GetImageById(Id);
+        imageRequest.Name = image.Name;
+        imageRequest.Caption = image.Caption;
+        imageRequest.IsShowHome = image.IsShowHome;
+        imagePath = image.ImagePath;
+    }
+
+    private async void HandleValidSubmit()
+    {
+        content.Add(new StringContent(imageRequest.Caption), "caption");
+        content.Add(new StringContent(imageRequest.IsShowHome.ToString()), "isShowHome");
+        var result = await ProductApiClient.UpdateProductImage(Id, content);
+        if (result)
+        {
+            ToastService.ShowSuccess($"Thêm ảnh thành công", $"Thông báo");
+        }
+        else
+        {
+            ToastService.ShowError("Thêm ảnh thất bại", "Thông báo");
+        }
+        await ModalInstance.CloseAsync(ModalResult.Ok<string>("thành công"));
+    }
+
+    public void HandleFileSelection(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        long maxFileSize = 2048 * 512;
+        try
+        {
+            var fileContent = new StreamContent(file.OpenReadStream(maxFileSize));
+            content.Add(fileContent, "imageFile", file.Name);
+
+        }
+        catch (Exception)
+        {
+            //Logger.LogError($"File: {file.Name} Error: {ex.Message}");
+        }
+    }
+}

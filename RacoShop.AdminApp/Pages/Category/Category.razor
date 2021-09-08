@@ -1,0 +1,142 @@
+﻿@page "/category"
+@inject ICategoryApiClient CategoryApiClient
+@inject IToastService ToastService
+
+<div class="row page-titles">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active">
+            <a href="/">Home</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="/category">Category</a>
+        </li>
+    </ol>
+</div>
+
+<div class="row">
+    <div class="col-lg-4">
+        <div class="card mb-3">
+            <div class="card-header">
+                <h4 class="card-title">Thêm danh mục</h4>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="input-group input-success-o me-3">
+                        <input type="text" class="form-control" placeholder="Tên danh mục" @bind="Name">
+                    </div>
+                    <button @onclick="OnCategory" class="btn btn-primary fw-bold">Thêm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Danh mục</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-responsive-md">
+                        <thead>
+                            <tr class="text-center">
+                                <th><b>No.</b></th>
+                                <th><b>Tên danh mục</b></th>
+                                <th><b>Hành động</b></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Categories != null)
+                            {
+                                <Virtualize Context="item" Items="Categories">
+                                    <ItemContent>
+                                        <tr class="text-center">
+                                            <td>@item.Id</td>
+                                            <td>@item.Name</td>
+                                            <td>
+                                                <div class="d-flex justify-content-center">
+                                                    <a role="button" @onclick="() => OnUpdate(item.Id, item.Name)" 
+                                                       class="btn btn-primary shadow btn-xs sharp me-3"><i class="fa fa-pencil"></i>
+                                                    </a>
+                                                    <a role="button" @onclick="() => OnDelete(item.Id)" 
+                                                       class="btn btn-danger shadow btn-xs sharp"><i class="fa fa-trash"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </ItemContent>
+                                    <Placeholder>
+                                        <tr>
+                                            <td>Loading...</td>
+                                        </tr>
+                                    </Placeholder>
+                                </Virtualize>
+                            }
+                            else
+                            {
+                                <LoadingIndicator></LoadingIndicator>
+                            }
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    public IModalService Modal { get; set; }
+    private List<CategoryVm> Categories { get; set; } = new List<CategoryVm>();
+    public string Name { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        await GetCategories();
+    }
+    private async Task OnCategory()
+    {
+        var result = await CategoryApiClient.CreateCategory(Name);
+        if (result)
+        {
+            Name = "";
+            ToastService.ShowSuccess("Tạo thành công");
+        }
+        else
+            ToastService.ShowError("Lỗi gì đó");
+
+        await GetCategories();
+    }
+    private async Task OnDelete(int id)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(CategoryDelete.Id), id);
+
+        var moviesModal = Modal.Show<CategoryDelete>("Xoá danh mục", parameters);
+        var result = await moviesModal.Result;
+
+        if (result.Cancelled)
+            Console.WriteLine("Modal was cancelled");
+        else
+            await GetCategories();
+    }
+
+    private async Task OnUpdate(int id, string name)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(CategoryUpdate.Id), id);
+        parameters.Add(nameof(CategoryUpdate.Name), name);
+        var moviesModal = Modal.Show<CategoryUpdate>("Chỉnh sửa thông tin", parameters);
+        var result = await moviesModal.Result;
+
+        if (!result.Cancelled)
+        {
+            StateHasChanged();
+            await GetCategories();
+        }
+    }
+    private async Task GetCategories()
+    {
+        Categories = await CategoryApiClient.GetAll();
+        StateHasChanged();
+    }
+}

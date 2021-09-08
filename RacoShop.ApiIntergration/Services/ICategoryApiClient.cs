@@ -8,7 +8,7 @@ namespace RacoShop.ApiIntergration.Services
     {
         Task<bool> CreateCategory(string name);
         Task<bool> DeleteCategory(int id);
-        Task<IEnumerable<CategoryVm>> GetAll();
+        Task<List<CategoryVm>> GetAll();
         Task<bool> UpdateCategory(int id, string name);
     }
 }

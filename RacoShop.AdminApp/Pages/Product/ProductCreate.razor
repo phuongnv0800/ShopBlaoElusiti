@@ -1,0 +1,198 @@
+﻿@page "/add-product"
+@inject IToastService ToastService
+@inject IProductApiClient ProductApiClient
+@inject NavigationManager NavigationManager
+@attribute [Authorize]
+<div class="row page-titles">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active">
+            <a href="/">Home</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="/product">Product</a>
+        </li>
+    </ol>
+</div>
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Tạo sản phẩm mới</h4>
+            </div>
+            <div class="card-body">
+                <div class="form-validation">
+                    <EditForm Model="product" OnValidSubmit="OnCreate">
+                        <DataAnnotationsValidator></DataAnnotationsValidator>
+                        <ValidationSummary></ValidationSummary>
+                        <div class="row">
+                            <div class="col-xl-6">
+                                <div class="mb-3 row">
+                                    <label class="col-lg-4 col-form-label" for="Name">
+                                        Tên sản phẩm
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="col-lg-6">
+                                        <InputText type="text" class="form-control"
+                                                   id="Name" placeholder="Name"
+                                                   @bind-Value="product.Name"></InputText>
+                                        <ValidationMessage For="()=> product.Name"></ValidationMessage>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label class="col-lg-4 col-form-label" for="Price">
+                                        Giá <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="col-lg-6">
+                                        <InputNumber type="email" placeholder="Price"
+                                                   class="form-control"
+                                                   id="Price" @bind-Value="@product.Price"></InputNumber>
+                                        <ValidationMessage For="()=> product.Price"></ValidationMessage>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label class="col-lg-4 col-form-label" for="Quantity">
+                                        Số lượng
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="col-lg-6">
+                                        <InputNumber class="form-control" placeholder="Quantity"
+                                                   id="Quantity" @bind-Value="@product.Quantity"></InputNumber>
+                                        <ValidationMessage For="()=> product.Quantity"></ValidationMessage>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label class="col-lg-4 col-form-label" for="Discount">
+                                        Giảm giá(%)
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="col-lg-6">
+                                        <InputNumber class="form-control" placeholder="Discount"
+                                                   id="Discount" @bind-Value="@product.Discount"></InputNumber>
+                                        <ValidationMessage For="()=> product.Discount"></ValidationMessage>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-6">
+                                <div class="mb-3 row">
+                                    <label class="col-lg-4 col-form-label" for="Rating">
+                                        Đánh giá
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="col-lg-6">
+                                        <InputNumber class="form-control" id="Rating" placeholder="Rating"
+                                                     @bind-Value="@product.Rating"></InputNumber>
+                                        <ValidationMessage For="()=> product.Rating"></ValidationMessage>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label class="col-lg-4 col-form-label" for="RatingCount">
+                                        Số người đánh giá
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="col-lg-6">
+                                        <InputNumber class="form-control" id="RatingCount" placeholder="RatingCount"
+                                                     @bind-Value="@product.RatingCount"></InputNumber>
+                                        <ValidationMessage For="()=> product.RatingCount"></ValidationMessage>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label class="col-lg-4 col-form-label" for="Gender">
+                                        Màu sắc <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="col-lg-6">
+                                        <div class="radio-inline">
+                                            <InputRadioGroup @bind-Value="product.ProductColor">
+                                                @foreach (var item in (ProductColor[])Enum.GetValues(typeof(ProductColor)))
+                                                {
+                                                    <InputRadio Value="item" class="form-check-input" />
+                                                    <label class="form-check-label me-4">
+                                                        @item
+                                                    </label>
+                                                }
+                                            </InputRadioGroup>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label class="col-lg-4 col-form-label" for="Gender">
+                                        Loại <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="col-lg-6">
+                                        <div class="radio-inline">
+                                            <InputRadioGroup @bind-Value="product.ProductMovement">
+                                                @foreach (var item in (ProductMovement[])Enum.GetValues(typeof(ProductMovement)))
+                                                {
+                                                    <InputRadio Value="item" class="form-check-input" />
+                                                    <label class="form-check-label me-4">
+                                                        @item
+                                                    </label>
+                                                }
+                                            </InputRadioGroup>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label class="col-lg-4 col-form-label" for="Description">
+                                        Chi tiết sản phẩm
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="col-lg-6">
+                                        <InputTextArea placeholder="Description"
+                                                       class="form-control" style="height:100px"
+                                                       id="Description" @bind-Value="@product.Description"></InputTextArea>
+                                        <ValidationMessage For="()=> product.Description"></ValidationMessage>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <div class="col-lg-8 ms-auto">
+                                        <button type="submit" class="btn btn-primary">Tạo sản phẩm</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private ProductRequest product;
+
+    protected override void OnInitialized()
+    {
+        product = new ProductRequest();
+    }
+
+    private async void OnCreate(EditContext context)
+    {
+        var result = await ProductApiClient.CreateProduct(product);
+        if (result)
+        {
+            ToastService.ShowSuccess($"Tạo sản phẩm thành công", $"Thông báo");
+            NavigationManager.NavigateTo($"/product");
+        }
+        else
+        {
+            ToastService.ShowError("Tạo sản phẩm thất bại", $"Thông báo");
+        }
+    }
+
+    //public async Task HandleFileSelection(InputFileChangeEventArgs e)
+    //{
+    //    var file = e.File;
+    //    long maxFileSize = 512 * 512;
+    //    try
+    //    {
+    //        var fileContent = new StreamContent(file.OpenReadStream(maxFileSize));
+    //        product.ImageByte = await fileContent.ReadAsByteArrayAsync();
+
+    //    }
+    //    catch (Exception)
+    //    {
+    //        //Logger.LogError($"File: {file.Name} Error: {ex.Message}");
+    //    }
+    //}
+}

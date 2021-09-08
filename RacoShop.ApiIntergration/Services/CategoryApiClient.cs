@@ -13,7 +13,7 @@ namespace RacoShop.ApiIntergration.Services
         public CategoryApiClient(HttpClient httpClient, ILocalStorageService localStorage) : base(httpClient, localStorage)
         {
         }
-        public async Task<IEnumerable<CategoryVm>> GetAll() => await GetFromJsonAsync<IEnumerable<CategoryVm>>($"api/categories");
+        public async Task<List<CategoryVm>> GetAll() => await GetFromJsonAsync<List<CategoryVm>>($"api/categories");
 
         public async Task<bool> CreateCategory(string name) => await CreateAsJsonAsync($"api/categories", name);
         public async Task<bool> UpdateCategory(int id, string name) => await UpdateAsJsonAsync($"api/categories/{id}", name);

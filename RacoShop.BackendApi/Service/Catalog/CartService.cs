@@ -13,6 +13,7 @@ namespace RacoShop.BackendApi.Service.Catalog
     public class CartService : ICartService
     {
         private readonly ShopDbContext _context;
+        private const string USER_CONTENT_FOLDER_NAME = "products";
 
         public CartService(ShopDbContext context)
         {
@@ -20,15 +21,22 @@ namespace RacoShop.BackendApi.Service.Catalog
         }
         public async Task<IEnumerable<CartVm>> Get(Guid userId)
         {
-            var query = from c in _context.Carts join p in _context.Products
-                        on c.ProductId equals p.Id where c.UserId == userId select new { c , p};
+            var query = from p in _context.Products 
+                        join c in _context.Carts on p.Id equals c.ProductId
+                        where c.UserId == userId select new { c , p};
+            var query2 = from p in _context.Products
+                        join c in _context.Carts on p.Id equals c.ProductId
+                        join pm in _context.ProductImages on p.Id equals pm.ProductId
+                        where c.UserId == userId
+                        select new { pm, c, p };
+            var images = await query2.Select(x=>x.pm.ImagePath).ToListAsync();
             var carts = await query.Select(x => new CartVm()
             {
                 UserId = x.c.UserId,
                 ProductId = x.c.ProductId,
                 Price = x.c.Price,
-                Name  =x.p.Name,
-                ImagePath = SystemConstants.BaseUrlImage + x.p.ImagePath,
+                Name  = x.p.Name,
+                ImagePath = SystemConstants.BaseUrlImage + USER_CONTENT_FOLDER_NAME + "/" + images.FirstOrDefault(),
                 Quantity = x.c.Quantity,
                 SubTotal = x.c.SubTotal,
                 DateCreated = x.c.DateCreated
@@ -40,18 +48,25 @@ namespace RacoShop.BackendApi.Service.Catalog
             var query = from c in _context.Carts
                         join p in _context.Products on c.ProductId equals p.Id
                         join u in _context.Users on c.UserId equals u.Id
-                        select new { c, p, u };
-            var carts = await query.Where(y=>y.u.UserName.Equals(userName)).Select(x => new CartVm()
-            {
-                UserId = x.c.UserId,
-                ProductId = x.c.ProductId,
-                Price = x.c.Price,
-                Name = x.p.Name,
-                ImagePath = SystemConstants.BaseUrlImage + x.p.ImagePath,
-                Quantity = x.c.Quantity,
-                SubTotal = x.c.SubTotal,
-                DateCreated = x.c.DateCreated
-            }).ToListAsync();
+                        select new {  c, p, u };
+            var query2 = from c in _context.Carts
+                        join p in _context.Products on c.ProductId equals p.Id
+                        join pm in _context.ProductImages on p.Id equals pm.ProductId
+                        join u in _context.Users on c.UserId equals u.Id
+                        select new { pm, c, p, u };
+            var images = await query2.Where(y => y.u.UserName.Equals(userName)).Select(x=> x.pm.ImagePath).ToListAsync();
+            var carts = await query.Where(y=>y.u.UserName.Equals(userName))
+                .Select(x => new CartVm()
+                {
+                    UserId = x.c.UserId,
+                    ProductId = x.c.ProductId,
+                    Price = x.c.Price,
+                    Name = x.p.Name,
+                    ImagePath = SystemConstants.BaseUrlImage + USER_CONTENT_FOLDER_NAME + "/" + images.FirstOrDefault(),
+                    Quantity = x.c.Quantity,
+                    SubTotal = x.c.SubTotal,
+                    DateCreated = x.c.DateCreated
+                }).ToListAsync();
             return carts;
         }
         public async Task<bool> Create(CartRequest request)

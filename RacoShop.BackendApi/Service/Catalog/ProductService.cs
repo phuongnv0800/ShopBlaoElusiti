@@ -10,8 +10,9 @@ using RacoShop.Utilities.Exceptions;
 using RacoShop.BackendApi.Service.Common;
 using RacoShop.ViewModel.Catalog;
 using RacoShop.BackendApi.Entities;
-using System.Text;
 using System.Net.Http.Headers;
+using System.Collections.Generic;
+using RacoShop.Utilities.Enums;
 using RacoShop.Utilities.Constants;
 
 namespace RacoShop.BackendApi.Service.Catalog
@@ -20,6 +21,7 @@ namespace RacoShop.BackendApi.Service.Catalog
     {
         private readonly ShopDbContext _context;
         private readonly IStorageService _storageService;
+        private const string USER_CONTENT_FOLDER_NAME = "products";
 
         public ProductService(ShopDbContext context, IStorageService storageService)
         {
@@ -35,11 +37,28 @@ namespace RacoShop.BackendApi.Service.Catalog
                 Name = request.Name,
                 Description = request.Description,
                 Quantity = request.Quantity,
+                Rating = 0,
+                RatingCount = 0,
+                Discount = request.Discount,
+                ProductMovement = request.ProductMovement,
+                ProductColor = request.ProductColor,
+                CategoryId = request.CategoryId,
             };
 
-            if (request.ImageByte != null)
+            if (request.ImagePath != null)
             {
-                product.ImagePath = await SaveFile(request.ImageByte);
+                product.ProductImages = new List<ProductImage>()
+                {
+                    new ProductImage()
+                    {
+                        Caption = "product image",
+                        DateCreated = DateTime.Now,
+                        Size = request.ImagePath.Length,
+                        Name = request.ImagePath.FileName,
+                        ImagePath = await SaveFileIFormFile(request.ImagePath),
+                        IsShowHome = false,
+                    }
+                };
             }
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
@@ -55,10 +74,20 @@ namespace RacoShop.BackendApi.Service.Catalog
             product.Description = request.Description;
             product.Price = request.Price;
             product.Quantity = request.Quantity;
-            if (request.ImageByte != null)
+            product.Discount = request.Discount;
+            product.ProductColor = request.ProductColor;
+            product.Rating = request.Rating;
+            product.RatingCount = request.RatingCount;
+            if (request.ImagePath != null)
             {
-                await _storageService.DeleteFileAsync(product.ImagePath);
-                product.ImagePath = await SaveFile(request.ImageByte);
+                var productImage = await _context.ProductImages.Where(x => x.ProductId == request.Id).FirstOrDefaultAsync();
+                if (productImage != null)
+                {
+                    await _storageService.DeleteFileAsync(productImage.ImagePath);
+                    productImage.ImagePath = await SaveFileIFormFile(request.ImagePath);
+                    productImage.Size = request.ImagePath.Length;
+                    productImage.Name = request.ImagePath.FileName;
+                }
             }
             return await _context.SaveChangesAsync();
         }
@@ -68,7 +97,12 @@ namespace RacoShop.BackendApi.Service.Catalog
             var product = await _context.Products.FindAsync(productId);
             if (product == null)
                 throw new RacoShopException($"Can't not find product {productId}");
-            await _storageService.DeleteFileAsync(product.ImagePath);
+            var productImages = await _context.ProductImages.Where(x => x.ProductId == productId).ToListAsync();
+            foreach (var item in productImages)
+            {
+                await _storageService.DeleteFileAsync(USER_CONTENT_FOLDER_NAME + "/" + item.ImagePath);
+                _context.ProductImages.Remove(item);
+            }
             _context.Products.Remove(product);
             return await _context.SaveChangesAsync();
         }
@@ -87,51 +121,18 @@ namespace RacoShop.BackendApi.Service.Catalog
                 Price = product.Price,
                 Description = product.Description,
                 Quantity = product.Quantity,
+                ProductColor = product.ProductColor,
+                ProductMovement = product.ProductMovement,
+                Rating = product.Rating,
+                RatingCount = product.RatingCount,
+                Discount = product.Discount,
                 CategoryId = product.CategoryId,
                 CategoryName = category.Name,
-                ImagePath = SystemConstants.BaseUrlImage + product.ImagePath,
             };
             return productVm;
         }
 
-        public async Task<PagedList<ProductVm>> GetAllPaging(PagingRequest request)
-        {
-            var query = from p in _context.Products join c in _context.Categories on p.CategoryId equals c.Id select new { p, c };
-            if (!string.IsNullOrEmpty(request.Keyword))
-                query = query.Where(x => x.p.Name.Contains(request.Keyword));
-            int totalRow = await query.CountAsync();
-            var data = await query
-                .Select(x => new ProductVm()
-                {
-                    Id = x.p.Id,
-                    Name = x.p.Name,
-                    Price = x.p.Price,
-                    Description = x.p.Description,
-                    ImagePath = SystemConstants.BaseUrlImage + x.p.ImagePath,
-                    CategoryId = x.p.CategoryId,
-                    CategoryName =x.c.Name,
-                    Quantity = x.p.Quantity
-                })
-                .OrderBy(x=>x.Id)
-                .Skip((request.PageNumber - 1) * request.PageSize)
-                .Take(request.PageSize)
-                .ToListAsync();
-            // select
-            var pagedResult = new PagedList<ProductVm>()
-            {
-                MetaData = new MetaData()
-                {
-                    TotalCount = totalRow,
-                    PageSize = request.PageSize,
-                    CurrentPage = request.PageNumber,
-                    TotalPages = (int)Math.Ceiling((double)totalRow / request.PageSize),
-                },
-                Items = data,
-            };
-            return pagedResult;
-        }
-
-        public async Task<PagedList<ProductVm>> GetAllByCategoryId(int categoryId, PagingRequest request)
+        public async Task<PagedList<ProductVm>> GetAll(PagingRequest request, int categoryId = 0)
         {
             var query = from p in _context.Products join c in _context.Categories on p.CategoryId equals c.Id select new { p, c };
             if (!string.IsNullOrEmpty(request.Keyword))
@@ -142,28 +143,32 @@ namespace RacoShop.BackendApi.Service.Catalog
 
             //paging
             int totalRow = await query.CountAsync();
-            var data = await query.Skip((request.PageNumber - 1) * request.PageSize)
-                .Take(request.PageSize)
+            var data = await query
                 .Select(x => new ProductVm()
                 {
                     Id = x.p.Id,
                     Name = x.p.Name,
                     Price = x.p.Price,
                     Description = x.p.Description,
-                    ImagePath = SystemConstants.BaseUrlImage + x.p.ImagePath,
+                    Quantity = x.p.Quantity,
+                    ProductColor = x.p.ProductColor,
+                    ProductMovement = x.p.ProductMovement,
+                    Rating = x.p.Rating,
+                    RatingCount = x.p.RatingCount,
+                    Discount = x.p.Discount,
                     CategoryId = x.p.CategoryId,
                     CategoryName = x.c.Name,
-                    Quantity = x.p.Quantity
                 })
                 .OrderBy(x => x.Id)
-                .AsSplitQuery()
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize)
                 .ToListAsync();
             // select
             var pagedResult = new PagedList<ProductVm>()
             {
                 MetaData = new MetaData()
                 {
-                    TotalCount = totalRow,
+                    TotalRecord = totalRow,
                     PageSize = request.PageSize,
                     CurrentPage = request.PageNumber,
                     TotalPages = (int)Math.Ceiling((double)totalRow / request.PageSize),
@@ -186,10 +191,96 @@ namespace RacoShop.BackendApi.Service.Catalog
             return true;
         }
 
-        private async Task<string> SaveFile(byte[] file)
+        public async Task<List<ProductImageVm>> GetAllImages(int productId)
         {
-            var fileName = $"{Guid.NewGuid()}.jpg";
-            await _storageService.SaveFileAsync(new MemoryStream(file), fileName);
+            return await _context.ProductImages.Where(x => x.ProductId == productId)
+                .Select(i => new ProductImageVm()
+                {
+                    Caption = i.Caption,
+                    DateCreated = i.DateCreated,
+                    Size = i.Size,
+                    Id = i.Id,
+                    ImagePath = SystemConstants.BaseUrlImage+ USER_CONTENT_FOLDER_NAME + "/"+  i.ImagePath,
+                    IsShowHome = i.IsShowHome,
+                    ProductId = i.ProductId,
+                    Name = i.Name,
+                }).ToListAsync();
+        }
+
+        public async Task<int> AddImage(int productId, ProductImageRequest request)
+        {
+            var productImage = new ProductImage()
+            {
+                Caption = request.Caption,
+                DateCreated = DateTime.Now,
+                IsShowHome = request.IsShowHome,
+                ProductId = productId,
+            };
+
+            if (request.ImageFile != null)
+            {
+                productImage.ImagePath = await this.SaveFileIFormFile(request.ImageFile);
+                productImage.Size = request.ImageFile.Length;
+                productImage.Name = request.ImageFile.FileName;
+            }
+            _context.ProductImages.Add(productImage);
+            await _context.SaveChangesAsync();
+            return productImage.Id;
+        }
+
+        public async Task<ProductImageVm> GetImageById(int imageId)
+        {
+            var image = await _context.ProductImages.FindAsync(imageId);
+            if (image == null)
+                throw new RacoShopException($"Cannot find an image with id {imageId}");
+
+            var viewModel = new ProductImageVm()
+            {
+                Caption = image.Caption,
+                DateCreated = image.DateCreated,
+                Size = image.Size,
+                Name = image.Name,
+                Id = image.Id,
+                ImagePath = SystemConstants.BaseUrlImage + USER_CONTENT_FOLDER_NAME + "/" + image.ImagePath,
+                IsShowHome = image.IsShowHome,
+                ProductId = image.ProductId,
+            };
+            return viewModel;
+        }
+
+        public async Task<int> UpdateImage(int imageId, ProductImageRequest request)
+        {
+            var productImage = await _context.ProductImages.FindAsync(imageId);
+            if (productImage == null)
+                throw new RacoShopException($"Cannot find an image with id {imageId}");
+
+            if (request.ImageFile != null)
+            {
+                productImage.Name = request.Name;
+                productImage.ImagePath = await this.SaveFileIFormFile(request.ImageFile);
+                productImage.Size = request.ImageFile.Length;
+                productImage.IsShowHome = request.IsShowHome;
+                productImage.Caption = request.Caption;
+            }
+            _context.ProductImages.Update(productImage);
+            return await _context.SaveChangesAsync();
+        }
+
+        public async Task<int> RemoveImage(int imageId)
+        {
+            var productImage = await _context.ProductImages.FindAsync(imageId);
+            if (productImage == null)
+                throw new RacoShopException($"Cannot find an image with id {imageId}");
+            await _storageService.DeleteFileAsync(USER_CONTENT_FOLDER_NAME + "/" + productImage.ImagePath);
+            _context.ProductImages.Remove(productImage);
+            return await _context.SaveChangesAsync();
+        }
+
+        private async Task<string> SaveFileIFormFile(IFormFile file)
+        {
+            var originalFileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"');
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(originalFileName)}";
+            await _storageService.SaveFileAsync(file.OpenReadStream(), USER_CONTENT_FOLDER_NAME + "/" + fileName);
             return fileName;
         }
     }

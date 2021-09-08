@@ -1,4 +1,5 @@
-﻿using RacoShop.Utilities.Enums;
+﻿using Microsoft.AspNetCore.Http;
+using RacoShop.Utilities.Enums;
 using System;
 using System.ComponentModel.DataAnnotations;
 
@@ -19,7 +20,7 @@ namespace RacoShop.ViewModel.System.Users
         public string PhoneNumber { get; set; }
         public Gender Gender { get; set; }
         public string Address { get; set; }
-        public byte[] AvatarLink { get; set; }
+        public IFormFile AvatarFile { get; set; }
 
     }
 }

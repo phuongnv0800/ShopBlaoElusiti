@@ -1,6 +1,7 @@
 ﻿using RacoShop.ViewModel.Common;
 using RacoShop.ViewModel.System.Users;
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace RacoShop.ApiIntergration.Services
@@ -13,6 +14,6 @@ namespace RacoShop.ApiIntergration.Services
         Task<UserVm> GetById(Guid id);
         Task<UserVm> GetByUserName(string userName);
         Task<bool> Register(RegisterRequest request);
-        Task<bool> Update(Guid id, UserUpdateRequest request);
+        Task<bool> Update(Guid id, MultipartFormDataContent request);
     }
 }

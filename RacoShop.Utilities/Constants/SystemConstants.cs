@@ -3,7 +3,7 @@
     public class SystemConstants
     {
         public const string MainConnectionString = "DbShop";
-        public const string BaseUrlImage = "https://localhost:5000/image/";
+        public const string BaseUrlImage = "https://localhost:5000/images/";
         public class AppSettings
         {
             public const string DefaultLanguageId = "DefaultLanguageId";

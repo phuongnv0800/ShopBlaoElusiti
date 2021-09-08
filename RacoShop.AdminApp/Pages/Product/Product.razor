@@ -1,0 +1,184 @@
+﻿@page "/product"
+@inject IProductApiClient productApiClient
+
+<div class="row page-titles">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active">
+            <a href="/">Home</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="/product">Product</a>
+        </li>
+    </ol>
+</div>
+<!-- row -->
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Product</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-responsive-md">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Name</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Discount</th>
+                                <th>Category</th>
+                                <th>Color</th>
+                                <th>Movement</th>
+                                <th>Rating</th>
+                                <th>Rating Count</th>
+                                <th>Hàng động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (products != null)
+                            {
+                                    <Virtualize Context="item" Items="products">
+                                        <ItemContent>
+                                            <tr>
+                                                <td>@item.Id</td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <a class="fw-bold" href="/product/@item.Id">
+                                                            <span class="">@item.Name</span>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                                <td>@item.Price</td>
+                                                <td>@item.Quantity</td>
+                                                <td>@item.Discount</td>
+                                                <td>
+                                                    <button class="btn btn-outline-secondary"
+                                                            @onclick="()=>CategoryAssign(item.Id, item.CategoryId)">
+                                                        @item.CategoryName
+                                                    </button>
+                                                </td>
+                                                <td>@item.ProductColor</td>
+                                                <td>@item.ProductMovement</td>
+                                                <td>@item.Rating</td>
+                                                <td>@item.RatingCount</td>
+                                                <td>
+                                                    <div class="dropdown">
+                                                        <button type="button" class="btn btn-warning light sharp" data-bs-toggle="dropdown">
+                                                            <svg width="20px" height="20px" viewBox="0 0 24 24" version="1.1"><g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><rect x="0" y="0" width="24" height="24" /><circle fill="#000000" cx="5" cy="12" r="2" /><circle fill="#000000" cx="12" cy="12" r="2" /><circle fill="#000000" cx="19" cy="12" r="2" /></g></svg>
+                                                        </button>
+                                                        <div class="dropdown-menu">
+                                                            <a role="button" class="dropdown-item" @onclick="() => Update(item.Id)">Edit</a>
+                                                            <a role="button" class="dropdown-item" @onclick="() => Delete(item.Id)">Delete</a>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </ItemContent>
+                                        <Placeholder>
+                                            <tr>
+                                                <td>Loading...</td>
+                                            </tr>
+                                        </Placeholder>
+                                    </Virtualize>
+                            }
+                            else
+                            {
+                                <LoadingIndicator></LoadingIndicator>
+                            }
+
+                        </tbody>
+                    </table>
+                    <Pagination MetaData="MetaData" Spread="2" SelectedPage="SelectedPage" ShowPageSize="ShowPageSize" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    public IModalService Modal { get; set; }
+
+    private List<ProductVm> products;
+
+    private PagingRequest request = new PagingRequest();
+
+    public MetaData MetaData { get; set; } = new MetaData();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await GetProduct();
+    }
+    private async Task SelectedPage(int page)
+    {
+        request.PageNumber = page;
+        await GetProduct();
+    }
+    private async Task ShowPageSize(int size)
+    {
+        request.PageSize = size;
+        request.PageNumber = 1;
+        await GetProduct();
+    }
+    public async Task SearchProduct(string name)
+    {
+        this.request.Keyword = name;
+        StateHasChanged();
+        await GetProduct();
+    }
+
+    private async Task Delete(int id)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(ProductDelete.Id), id);
+
+        var moviesModal = Modal.Show<ProductDelete>("Xoá sản phẩm", parameters);
+        var result = await moviesModal.Result;
+
+        if (result.Cancelled)
+            Console.WriteLine("Modal was cancelled");
+        else
+            await GetProduct();
+    }
+
+    private async Task Update(int id)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(ProductUpdate.Id), id);
+
+        var moviesModal = Modal.Show<ProductUpdate>("Chỉnh sửa thông tin", parameters);
+        var result = await moviesModal.Result;
+
+        if (!result.Cancelled)
+        {
+            StateHasChanged();
+            await GetProduct();
+        }
+    }
+    private async Task CategoryAssign(int id, int categoryId)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(ProductUpdateCategory.Id), id);
+        parameters.Add(nameof(ProductUpdateCategory.CategoryId), categoryId);
+
+        var moviesModal = Modal.Show<ProductUpdateCategory>("Gán danh mục", parameters);
+        var result = await moviesModal.Result;
+
+        if (!result.Cancelled)
+        {
+            StateHasChanged();
+            await GetProduct();
+        }
+    }
+
+    private async Task GetProduct()
+    {
+        var result = await productApiClient.GetAll(request);
+        products = result.Items;
+        MetaData = result.MetaData;
+        StateHasChanged();
+    }
+}

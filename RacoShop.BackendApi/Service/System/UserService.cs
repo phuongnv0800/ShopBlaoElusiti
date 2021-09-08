@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -11,6 +12,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,6 +26,7 @@ namespace RacoShop.BackendApi.Service.System
         private readonly RoleManager<AppRole> _roleManager;
         private readonly IConfiguration _config;
         private readonly IStorageService _storageService;
+        private const string USER_CONTENT_FOLDER_NAME = "users";
 
         public UserService(UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager,
@@ -49,6 +52,7 @@ namespace RacoShop.BackendApi.Service.System
             var claims = new[]
             {
                 new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.GivenName, user.FirstName + " " + user.LastName),
                 new Claim(ClaimTypes.Role, string.Join(";", roles)),
                 new Claim(ClaimTypes.Name, request.UserName)
@@ -72,6 +76,7 @@ namespace RacoShop.BackendApi.Service.System
             var user = await _userManager.FindByIdAsync(id.ToString());
             if (user == null)
                 return false;
+            await _storageService.DeleteFileAsync(USER_CONTENT_FOLDER_NAME + "/" + user.Avatar);
             var result = await _userManager.DeleteAsync(user);//xoa user
             if (result.Succeeded)
                 return false;
@@ -96,7 +101,7 @@ namespace RacoShop.BackendApi.Service.System
                 UserName = user.UserName,
                 Gender = user.Gender,
                 Address = user.Address,
-                Avatar = SystemConstants.BaseUrlImage +  user.Avatar,
+                Avatar = SystemConstants.BaseUrlImage + USER_CONTENT_FOLDER_NAME+ "/"+  user.Avatar,
                 Roles = roles,
             };
             return userVm;
@@ -119,7 +124,7 @@ namespace RacoShop.BackendApi.Service.System
                 UserName = user.UserName,
                 Gender = user.Gender,
                 Address = user.Address,
-                Avatar = SystemConstants.BaseUrlImage + user.Avatar,
+                Avatar = SystemConstants.BaseUrlImage + USER_CONTENT_FOLDER_NAME + "/" + user.Avatar,
                 Roles = roles,
             };
             return userVm;
@@ -147,7 +152,7 @@ namespace RacoShop.BackendApi.Service.System
                         Dob = x.Dob,
                         Gender = x.Gender,
                         Address = x.Address,
-                        Avatar = SystemConstants.BaseUrlImage + x.Avatar,
+                        Avatar = SystemConstants.BaseUrlImage + USER_CONTENT_FOLDER_NAME + "/" + x.Avatar,
                     }
                 )
                 .OrderBy(x => x.Id)
@@ -159,7 +164,7 @@ namespace RacoShop.BackendApi.Service.System
             {
                 MetaData = new MetaData()
                 {
-                    TotalCount = totalRow,
+                    TotalRecord = totalRow,
                     PageSize = request.PageSize,
                     CurrentPage = request.PageNumber,
                     TotalPages = (int)Math.Ceiling((double)totalRow / request.PageSize),
@@ -190,9 +195,10 @@ namespace RacoShop.BackendApi.Service.System
                 UserName = request.UserName,
                 PhoneNumber = request.PhoneNumber,
                 Gender = request.Gender,
-                Address = request.Address,
-                Avatar = await SaveFile(request.AvatarLink),
+                Address = request.Address
             };
+            if (request.AvatarFile != null)
+                user.Avatar = await SaveFileIFormFile(request.AvatarFile);
 
             var result = await _userManager.CreateAsync(user, request.Password);
             if (result.Succeeded)
@@ -229,14 +235,11 @@ namespace RacoShop.BackendApi.Service.System
 
         public async Task<bool> Update(Guid id, UserUpdateRequest request)
         {
-
             if (await _userManager.Users.AnyAsync(x => x.Email == request.Email && x.Id != id))
             {
                 return false;
             }
-
             var user = await _userManager.FindByIdAsync(id.ToString());
-
             user.Dob = request.Dob;
             user.Email = request.Email;
             user.FirstName = request.FirstName;
@@ -244,9 +247,11 @@ namespace RacoShop.BackendApi.Service.System
             user.PhoneNumber = request.PhoneNumber;
             user.Gender = request.Gender;
             user.Address = request.Address;
-            if(request.AvatarLink != null)
-                user.Avatar = await SaveFile(request.AvatarLink);
-
+            if(request.AvatarFile != null)
+            {
+                await _storageService.DeleteFileAsync(USER_CONTENT_FOLDER_NAME + "/" + user.Avatar);
+                user.Avatar = await SaveFileIFormFile(request.AvatarFile);
+            }
 
             var result = await _userManager.UpdateAsync(user);
             if (result.Succeeded)
@@ -255,10 +260,12 @@ namespace RacoShop.BackendApi.Service.System
             }
             return false;
         }
-        private async Task<string> SaveFile(byte[] file)
+
+        private async Task<string> SaveFileIFormFile(IFormFile file)
         {
-            var fileName = $"{Guid.NewGuid()}.jpg";
-            await _storageService.SaveFileAsync(new MemoryStream(file), fileName);
+            var originalFileName = ContentDispositionHeaderValue.Parse(file.ContentDisposition).FileName.Trim('"');
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(originalFileName)}";
+            await _storageService.SaveFileAsync(file.OpenReadStream(), USER_CONTENT_FOLDER_NAME + "/" + fileName);
             return fileName;
         }
     }

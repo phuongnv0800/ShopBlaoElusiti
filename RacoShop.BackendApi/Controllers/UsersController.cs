@@ -55,7 +55,7 @@ namespace RacoShop.BackendApi.Controllers
        
          //PUT: http://localhost/api/users/id
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody]UserUpdateRequest request)
+        public async Task<IActionResult> Update(Guid id, [FromForm]UserUpdateRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);

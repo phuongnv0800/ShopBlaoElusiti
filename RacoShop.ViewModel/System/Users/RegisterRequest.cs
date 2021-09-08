@@ -1,4 +1,5 @@
-﻿using RacoShop.Utilities.Enums;
+﻿using Microsoft.AspNetCore.Http;
+using RacoShop.Utilities.Enums;
 using System;
 using System.ComponentModel.DataAnnotations;
 
@@ -30,7 +31,7 @@ namespace RacoShop.ViewModel.System.Users
 
         public string Address { get; set; }
 
-        public byte[] AvatarLink { get; set; }
+        public IFormFile AvatarFile { get; set; }
 
         [Display(Name = "Tên tài khoản")]
         [Required(ErrorMessage = "Tên tài khoản không được để trống")]

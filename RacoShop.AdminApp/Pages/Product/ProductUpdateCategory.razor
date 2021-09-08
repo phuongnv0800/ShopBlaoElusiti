@@ -1,0 +1,49 @@
+﻿<div class="simple-form" style="width: 220px">
+    <select class="default-select form-control wide mb-2" @bind="CategoryId">
+        @if (Categories != null)
+        {
+            @foreach (var item in Categories)
+            {
+                <option value="@item.Id">@item.Name</option>
+            }
+        }
+
+    </select>
+    <button @onclick="CategoryAssign" class="btn btn-sm btn-success me-3">Cập nhật</button>
+
+    <button @onclick="ModalInstance.CancelAsync" class="btn btn-sm btn-danger">Huỷ bỏ</button>
+
+</div>
+@inject ICategoryApiClient CategoryApiClient
+@inject IProductApiClient ProductApiClient
+@inject IToastService ToastService
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    [Parameter]
+    public int CategoryId { get; set; }
+
+    [CascadingParameter]
+    BlazoredModalInstance ModalInstance { get; set; }
+
+    public IEnumerable<CategoryVm> Categories { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        Categories = await CategoryApiClient.GetAll();
+    }
+
+    private async void CategoryAssign()
+    {
+        var result = await ProductApiClient.CategoryAssign(Id, CategoryId);
+        if (result)
+            ToastService.ShowSuccess($"Cập nhật sản phẩm", $"Thông báo");
+
+        else
+            ToastService.ShowError("Cập nhật không thành công", $"Thông báo");
+
+        await ModalInstance.CloseAsync(ModalResult.Ok<string>("thành công"));
+    }
+}

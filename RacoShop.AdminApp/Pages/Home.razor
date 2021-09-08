@@ -1,0 +1,77 @@
+﻿@page "/"
+@attribute [Authorize]
+@inject IProductApiClient ProductApiClient
+
+<div class="row page-titles">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active"><a href="/">Home</a></li>
+        <li class="breadcrumb-item"><a href="/product">Product</a></li>
+    </ol>
+</div>
+<div class="row">
+    @if (products != null)
+    {
+        <Virtualize Context="item" Items="products">
+            <div class="col-xl-3 col-lg-6 col-sm-6">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="new-arrival-product">
+                            <GetOneImage ProductId="@item.Id"/>
+                            <div class="new-arrival-content text-center mt-3">
+                                <h4><a href="ecom-product-detail.html">@item.Name</a></h4>
+                                <ul class="star-rating">
+                                    <li><i class="fa fa-star"></i></li>
+                                    <li><i class="fa fa-star"></i></li>
+                                    <li><i class="fa fa-star"></i></li>
+                                    <li><i class="fa fa-star-half-empty"></i></li>
+                                    <li><i class="fa fa-star-half-empty"></i></li>
+                                </ul>
+                                <span class="price">@item.Price.ToString("c")</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Virtualize>
+        <Pagination MetaData="MetaData" Spread="2" SelectedPage="SelectedPage" ShowPageSize="ShowPageSize" />
+    }
+</div>
+@code{
+    private List<ProductVm> products;
+
+    private PagingRequest request = new PagingRequest();
+
+    public MetaData MetaData { get; set; } = new MetaData();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await GetProduct();
+    }
+    private async Task SelectedPage(int page)
+    {
+        request.PageNumber = page;
+        await GetProduct();
+    }
+    private async Task ShowPageSize(int size)
+    {
+        request.PageSize = size;
+        request.PageNumber = 1;
+        await GetProduct();
+    }
+    public async Task SearchProduct(string name)
+    {
+        this.request.Keyword = name;
+        //StateHasChanged();
+        await GetProduct();
+    }
+
+    private async Task GetProduct()
+    {
+        request.PageSize = 8;
+        var result = await ProductApiClient.GetAll(request);
+        products = result.Items;
+        MetaData = result.MetaData;
+        StateHasChanged();
+    }
+} 

@@ -30,7 +30,7 @@ namespace RacoShop.ApiIntergration.Services
                 queryStringParam.Add("keyword", request.Keyword);
             //if (request.CategoryId != null)
             //    queryStringParam.Add("categoryId", request.CategoryId.ToString());
-            string url = QueryHelpers.AddQueryString($"/api/products/paging", queryStringParam);
+            string url = QueryHelpers.AddQueryString($"/api/products", queryStringParam);
 
             return await _httpClient.GetFromJsonAsync<PagedList<ProductVm>>(url);
         }
@@ -44,6 +44,31 @@ namespace RacoShop.ApiIntergration.Services
         public async Task<bool> UpdateProduct(int id, ProductRequest request) => await UpdateAsJsonAsync($"/api/products/{id}", request);
 
         public async Task<bool> DeleteProduct(int id) => await DeleteAsync($"/api/products/{id}");
-        public async Task<bool> CategoryAssign(int id, int categoryId) => await UpdateAsJsonAsync($"/api/products/{id}/categories", categoryId);
+        public async Task<bool> CategoryAssign(int id, int categoryId)
+        {
+            return await UpdateAsJsonAsync($"/api/products/{id}/categories", categoryId);
+        }
+
+        public async Task<List<ProductImageVm>> GetImageAll(int productId)
+        {
+            return await GetFromJsonAsync<List<ProductImageVm>>($"/api/products/{productId}/images");
+        }
+
+        public async Task<ProductImageVm> GetImageById(int id)
+        {
+            return await GetFromJsonAsync<ProductImageVm>($"/api/products/image/{id}");
+        }
+        public async Task<bool> DeleteImage(int id)
+        {
+            return await DeleteAsync($"/api/products/image/{id}");
+        }
+        public async Task<bool> CreateProductImage(int productId, MultipartFormDataContent request)
+        {
+            return await CreateAsync($"/api/products/{productId}/image", request);
+        }
+        public async Task<bool> UpdateProductImage(int productId, MultipartFormDataContent request)
+        {
+            return await UpdateAsync($"/api/products/{productId}/image", request);
+        }
     }
 }

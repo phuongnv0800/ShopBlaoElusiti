@@ -1,0 +1,148 @@
+﻿@inject IToastService ToastService
+@inject IUserApiClient UserApiClient
+<style>
+    /* width */
+    ::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    /* Track */
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    /* Handle */
+    ::-webkit-scrollbar-thumb {
+        background: #888;
+    }
+
+        /* Handle on hover */
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+</style>
+<div class="simple-form p-2" style="max-width: 500px;max-height: 600px; overflow-y: auto; overflow-x: hidden;">
+    <EditForm Model="userUpdate" OnValidSubmit="Update">
+        <div class="mb-3 row">
+            <div class="col-lg-6">
+                <label for="FirstName">Họ</label>
+                <InputText class="form-control form-control-sm" id="FirstName" @bind-Value="@userUpdate.FirstName" />
+            </div>
+            <div class="col-lg-6">
+                <label for="LastName">Tên</label>
+                <InputText class="form-control form-control-sm" id="LastName" @bind-Value="@userUpdate.LastName" />
+            </div>
+        </div>
+        <div class="mb-3 row">
+            <div class="col-lg-6">
+                <label class="col-form-label">Giới tính:</label>
+                <div class="col-form-label">
+                    <div class="radio-inline">
+                        <InputRadioGroup @bind-Value="userUpdate.Gender">
+                            @foreach (var item in (Gender[])Enum.GetValues(typeof(Gender)))
+                            {
+                                <InputRadio  Value="item"class="form-check-input"/>
+                                <label class="form-check-label me-3">
+                                    @item
+                                </label>
+                            }
+                        </InputRadioGroup>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <label for="Dob">Ngày sinh</label>
+                <InputDate type="date" class="form-control" id="Dob" @bind-Value="@userUpdate.Dob" />
+            </div>
+        </div>
+        <div class="mb-3 row">
+            <div class="col-lg-6">
+                <label for="Email">Email</label>
+                <InputText type="email" class="form-control form-control-sm" id="Email" @bind-Value="@userUpdate.Email" />
+            </div>
+            <div class="col-lg-6">
+                <label for="PhoneNumber">Số điện thoại</label>
+                <InputText class="form-control form-control-sm" id="PhoneNumber" @bind-Value="@userUpdate.PhoneNumber" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="Address">Địa chỉ</label>
+            <InputTextArea class="form-control form-control-sm" id="Address" @bind-Value="@userUpdate.Address" />
+        </div>
+        <div class="mb-3">
+            <label>Avatar: </label>
+            <InputFile OnChange="HandleFileSelection" />
+        </div>
+        <button type="submit" class="btn btn-sm btn-primary me-3">Cập nhật</button>
+        <button type="button" @onclick="ModalInstance.CancelAsync" class="btn btn-sm btn-danger">Huỷ bỏ</button>
+    </EditForm>
+    
+
+</div>
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    [CascadingParameter]
+    BlazoredModalInstance ModalInstance { get; set; }
+    private MultipartFormDataContent content =new MultipartFormDataContent();
+    private UserUpdateRequest userUpdate = new UserUpdateRequest();
+
+    protected override void OnInitialized()
+    {
+        SetProduct();
+        base.OnInitialized();
+    }
+
+
+    private async void SetProduct()
+    {
+        var user = await UserApiClient.GetById(Id);
+        userUpdate.Id = user.Id;
+        userUpdate.FirstName = user.FirstName;
+        userUpdate.LastName = user.LastName;
+        userUpdate.Dob = user.Dob;
+        userUpdate.Email = user.Email;
+        userUpdate.PhoneNumber = user.PhoneNumber;
+        userUpdate.Address = user.Address;
+        userUpdate.Gender = user.Gender;
+        StateHasChanged();
+    }
+    private async void Update()
+    {
+        content.Add(new StringContent(userUpdate.FirstName), "firstName");
+        content.Add(new StringContent(userUpdate.LastName), "lastName");
+        content.Add(new StringContent(userUpdate.Dob.ToString()), "dob");
+        content.Add(new StringContent(userUpdate.Email), "email");
+        content.Add(new StringContent(userUpdate.PhoneNumber), "phoneNumber");
+        content.Add(new StringContent(userUpdate.Address), "address");
+        content.Add(new StringContent(userUpdate.Gender.ToString()), "gender");
+        var result = await UserApiClient.Update(Id, content);
+        if (result)
+        {
+            ToastService.ShowSuccess($"Cập nhật thành công", "Thông báo");
+        }
+        else
+        {
+            ToastService.ShowError("Cập nhật thất bại", "Thông báo");
+        }
+        await ModalInstance.CloseAsync(ModalResult.Ok<string>("thành công"));
+    }
+
+    private void HandleFileSelection(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        long maxFileSize = 512 * 512;
+        try
+        {
+            var fileContent = new StreamContent(file.OpenReadStream(maxFileSize));
+            content.Add(fileContent, "avatarFile", file.Name);
+
+        }
+        catch (Exception)
+        {
+            //Logger.LogError($"File: {file.Name} Error: {ex.Message}");
+        }
+    }
+}

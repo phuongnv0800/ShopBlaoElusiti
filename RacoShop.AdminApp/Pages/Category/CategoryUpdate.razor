@@ -1,0 +1,36 @@
+﻿@inject IToastService ToastService
+@inject ICategoryApiClient CategoryApiClient
+<div class="simple-form">
+    <div class=" mb-4">
+        <div class="input-group mb-3 input-success-o">
+            <input type="text" class="form-control" placeholder="Tên danh mục" @bind="Name">
+        </div>
+    </div>
+
+    <button @onclick="Yes" class="btn btn-sm me-3 btn-outline-success">Cập nhật</button>
+    <button @onclick="No" class="btn btn-sm btn-outline-danger">Huỷ</button>
+</div>
+@code {
+    [CascadingParameter]
+    BlazoredModalInstance ModalInstance { get; set; }
+
+    [Parameter]
+    public int Id { get; set; }
+
+    [Parameter]
+    public string Name { get; set; }
+    async Task Yes()
+    {
+            var result = await CategoryApiClient.UpdateCategory(Id, Name);
+            if (result)
+                ToastService.ShowSuccess("Cập nhật thành công", "Thông báo");
+            else
+                ToastService.ShowError("Lỗi gì đó");
+            await ModalInstance.CloseAsync(ModalResult.Ok<bool>(true));
+    }
+
+    void No()
+    {
+        ModalInstance.CloseAsync(ModalResult.Cancel());
+    }
+}

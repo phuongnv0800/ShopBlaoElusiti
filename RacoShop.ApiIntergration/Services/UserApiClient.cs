@@ -32,7 +32,11 @@ namespace RacoShop.ApiIntergration.Services
         public async Task<UserVm> GetById(Guid id) => await GetFromJsonAsync<UserVm>($"/api/users/{id}");
         public async Task<UserVm> GetByUserName(string userName) => await GetFromJsonAsync<UserVm>($"/api/users/name/{userName}");
         public async Task<bool> Register(RegisterRequest request) => await CreateAsJsonAsync($"/api/users", request);
-        public async Task<bool> Update(Guid id, UserUpdateRequest request) => await UpdateAsJsonAsync($"/api/users/{id}", request);
+        public async Task<bool> Update(Guid id, MultipartFormDataContent request)
+        {
+            return await UpdateAsync($"/api/users/{id}", request);
+        }
+
         public async Task<bool> Delete(Guid id) => await DeleteAsync($"/api/users/{id}");
         public async Task<bool> Assign(Guid id, RoleAssignRequest request) => await UpdateAsJsonAsync($"/api/users/{id}/roles", request);
     }

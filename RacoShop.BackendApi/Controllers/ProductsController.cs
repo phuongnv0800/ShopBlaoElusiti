@@ -19,11 +19,11 @@ namespace RacoShop.BackendApi.Controllers
             _productService = productService;
         }
 
-        [HttpGet("paging")]
+        [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> GetAllPaging([FromQuery]PagingRequest request)
+        public async Task<IActionResult> GetAll([FromQuery] PagingRequest request)
         {
-            var products = await _productService.GetAllPaging(request);
+            var products = await _productService.GetAll(request);
             return Ok(products);
         }
 
@@ -40,8 +40,8 @@ namespace RacoShop.BackendApi.Controllers
 
         //https://localhost:port/product/1
         [HttpPost]
-        //[Consumes("multipart/form-data")]//nhận kiểu dữ liệu truyền lên là form data
-        public async Task<IActionResult> Create([FromBody]ProductRequest request)
+        [Consumes("multipart/form-data")]//nhận kiểu dữ liệu truyền lên là form data
+        public async Task<IActionResult> Create([FromForm] ProductRequest request)
         {
             if (!ModelState.IsValid)
             {
@@ -50,21 +50,17 @@ namespace RacoShop.BackendApi.Controllers
             var productId = await _productService.Create(request);
             if (productId == 0)
                 return BadRequest();
-
-            var product = await _productService.GetById(productId);
-            return Ok(product);
-            //return CreatedAtAction(nameof(GetById), new { id = productId }, product);
+            return Ok();
         }
 
         [HttpPut("{productId}")]
-        //call api with httpClient thi dung FromBody
-        public async Task<IActionResult> Update([FromBody]ProductRequest request)
+        public async Task<IActionResult> Update([FromBody] ProductRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var affectedResult = await _productService.Update(request);
-            if (affectedResult == 0)
+            var result = await _productService.Update(request);
+            if (result == 0)
                 return BadRequest();
 
             return Ok();
@@ -73,15 +69,14 @@ namespace RacoShop.BackendApi.Controllers
         [HttpDelete("{productId}")]
         public async Task<IActionResult> Delete(int productId)
         {
-            var affectedResult = await _productService.Delete(productId);
-            if (affectedResult == 0)
+            var result = await _productService.Delete(productId);
+            if (result == 0)
                 return BadRequest();
-
             return Ok();
         }
 
         [HttpPut("{id}/categories")]
-        public async Task<IActionResult> CategoryAssign(int id,[FromBody]int categoryId)
+        public async Task<IActionResult> CategoryAssign(int id, [FromBody] int categoryId)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -94,5 +89,56 @@ namespace RacoShop.BackendApi.Controllers
             return Ok();
         }
 
+        [HttpGet("{productId}/images")]
+        public async Task<ActionResult> GetAllImage(int productId)
+        {
+            var images = await _productService.GetAllImages(productId);
+            if (images == null)
+                return BadRequest("Can't not find images");
+            return Ok(images);
+        }
+        [HttpGet("image/{id}")]
+        public async Task<ActionResult> GetImage(int id)
+        {
+            var image = await _productService.GetImageById(id);
+            if (image == null)
+                return BadRequest("Can't not find image");
+            return Ok(image);
+        }
+
+        [HttpPost("{productId}/image")]
+        [Consumes("multipart/form-data")]//nhận kiểu dữ liệu truyền lên là form data
+        public async Task<IActionResult> CreateImage(int productId,[FromForm] ProductImageRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var imageId = await _productService.AddImage(productId, request);
+            if (imageId == 0)
+                return BadRequest();
+            return Ok();
+        }
+        [HttpPut("{productId}/image")]
+        [Consumes("multipart/form-data")]//nhận kiểu dữ liệu truyền lên là form data
+        public async Task<IActionResult> UpdateImage(int productId, [FromForm] ProductImageRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var imageId = await _productService.UpdateImage(productId, request);
+            if (imageId == 0)
+                return BadRequest();
+            return Ok();
+        }
+        [HttpDelete("image/{id}")]
+        public async Task<IActionResult> DeleteImage(int id)
+        {
+            var result = await _productService.RemoveImage(id);
+            if (result == 0)
+                return BadRequest();
+            return Ok();
+        }
     }
 }

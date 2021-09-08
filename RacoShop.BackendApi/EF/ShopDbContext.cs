@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using RacoShop.BackendApi.Entities;
 using RacoShop.BackendApi.Configuration;
-using RacoShop.BackendApi.Extensions;
 
 namespace RacoShop.BackendApi.EF
 {
@@ -16,13 +15,13 @@ namespace RacoShop.BackendApi.EF
         {
             builder.ApplyConfiguration(new AppRoleConfiguration());
             builder.ApplyConfiguration(new AppUserConfiguration());
-            builder.ApplyConfiguration(new ProductConfiguration());
             builder.ApplyConfiguration(new CategoryConfiguration());
+            builder.ApplyConfiguration(new ProductConfiguration());
+            builder.ApplyConfiguration(new ProductImageConfiguration());
             builder.ApplyConfiguration(new CartConfiguration());
             builder.ApplyConfiguration(new OrderConfiguration());
             builder.ApplyConfiguration(new OrderDetailConfiguration());
             builder.ApplyConfiguration(new TransactionConfiguration());
-            builder.Seed();
             base.OnModelCreating(builder);
         }
         public DbSet<AppRole> AppRoles { get; set; }
@@ -33,5 +32,6 @@ namespace RacoShop.BackendApi.EF
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<ProductImage> ProductImages { get; set; }
     }
 }

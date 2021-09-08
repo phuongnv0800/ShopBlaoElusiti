@@ -1,0 +1,20 @@
+﻿<div class="new-arrivals-img-contnent">
+    @if (Image != null)
+    {
+        <img class="img-fluid" src="@Image.ImagePath" alt="@Image.Caption">
+    }
+    else
+    {
+        <img class="img-fluid" src="images/product/1.jpg" alt="">
+    }
+</div>
+@inject IProductApiClient productApiClient
+@code {
+    [Parameter]
+    public int ProductId { get; set; }
+    private ProductImageVm Image = new ProductImageVm();
+    protected override async Task OnInitializedAsync()
+    {
+        Image = (await productApiClient.GetImageAll(ProductId)).FirstOrDefault();
+    }
+}

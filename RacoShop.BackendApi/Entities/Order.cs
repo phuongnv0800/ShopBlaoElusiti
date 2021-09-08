@@ -1,9 +1,6 @@
 ﻿using RacoShop.Utilities.Enums;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 
 namespace RacoShop.BackendApi.Entities
 {
@@ -16,7 +13,7 @@ namespace RacoShop.BackendApi.Entities
         public string ShipPhone { set; get; }
         public OrderStatus Status { set; get; }
 
-        public List<OrderDetail> OrderDetails { get; set; }
+        public ICollection<OrderDetail> OrderDetails { get; set; }
 
         public Guid UserId { set; get; }
         public AppUser AppUser { get; set; }
